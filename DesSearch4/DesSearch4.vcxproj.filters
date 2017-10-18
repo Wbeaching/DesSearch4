@@ -21,7 +21,10 @@
     <ClCompile Include="LookUpTables.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Test.cpp">
+    <ClCompile Include="SpeedTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DiffDistribution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,6 +39,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="LookUpTables.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DiffDistribution.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

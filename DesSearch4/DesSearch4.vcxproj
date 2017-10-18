@@ -75,11 +75,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DesFunc.cpp" />
+    <ClCompile Include="DiffDistribution.cpp" />
     <ClCompile Include="LookUpTables.cpp" />
-    <ClCompile Include="Test.cpp" />
+    <ClCompile Include="SpeedTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DesFunc.h" />
+    <ClInclude Include="DiffDistribution.h" />
     <ClInclude Include="LookUpTables.h" />
     <ClInclude Include="Tables.h" />
     <ClInclude Include="Types.h" />

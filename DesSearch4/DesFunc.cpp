@@ -67,3 +67,10 @@ unsigned int Permutation1(unsigned int x){
 	}
 	return y;
 }
+
+void Substitution(u8* output,u8 input,int index){
+	u8 x=input,x1,x2;
+	x1=(x&0x1)|((x>>4)&0x2);
+	x2=(x>>1)&0xf;
+	*output=S[index][x1][x2];
+}

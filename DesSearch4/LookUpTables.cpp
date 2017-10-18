@@ -30,7 +30,7 @@ void ExpansionTL(u8* output, u32 input){
 		set(y[i],ETableLookUp[i][(x>>(8*i))&0xff]);
 	}
 	for(int i=0;i<8;i++){
-		output[i]=y[1][i]|y[2][i]|y[3][i]|y[4][i];
+		output[i]=y[0][i]|y[1][i]|y[2][i]|y[3][i];
 	}
 }
 
@@ -50,5 +50,5 @@ void PermutationTL(u32* output, u32 input){
 	for(int i=0;i<4;i++){
 		y[i]=PTableLookUp[i][(x>>(8*i))&0xff];
 	}
-	*output=y[1]|y[2]|y[3]|y[4];
+	*output=y[0]^y[1]^y[2]^y[3];
 }

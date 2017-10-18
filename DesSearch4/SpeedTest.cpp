@@ -4,10 +4,8 @@
 #include "Types.h"
 #include "DesFunc.h"
 #include "LookUpTables.h"
-#ifdef RAND_MAX
-#undef RAND_MAX
-#define RAND_MAX 0xffffffff
-#endif
+#include "DiffDistribution.h"
+#define TEST_NUM 0xffffff
 void print32(const u32 x){
 	printf("%x\n",x);
 }
@@ -20,34 +18,40 @@ void print8t8(const u8* y){
 
 int main(){
 	clock_t start,end;
-	u32 x=0;
+	u32 x=0,z=0;
 	u8 y[8]={0};
 	srand((unsigned long)time(NULL));
 	for(int i=0;i<3;i++){
 		x=x<<15|rand();
-		//printf("%x\n",x);
 	}
+	//printf("%x\n",x);
 	start = clock();
-	for(int i=0;i<0xffffff;i++){
+	for(int i=0;i<TEST_NUM;i++){
 		Expansion(y,x);
 		//print8t8(y);
-		//Permutation(&x,x);
-		//print32(x);
+		Permutation(&z,x);
+		//print32(z);
 	}
 	end = clock();
 	printf("原始time=%f\n",(double)(end-start)/CLK_TCK);
 	
 	start = clock();
 	GenETableLookUp();
+	GenPTableLookUp();
 	end = clock();
-	printf("生成time=%f\n",(double)(end-start)/CLK_TCK);
+	printf("查表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
 	start = clock();
-	for(int i=0;i<0xffffff;i++){
+	GenDiffDistributionTable();
+	end = clock();
+	printf("差分分布表生成time=%f\n",(double)(end-start)/CLK_TCK);
+
+	start = clock();
+	for(int i=0;i<TEST_NUM;i++){
 		ExpansionTL(y,x);
 		//print8t8(y);
-		//Permutation(&x,x);
-		//print32(x);
+		PermutationTL(&z,x);
+		//print32(z);
 	}
 	end = clock();
 	printf("查表time=%f\n",(double)(end-start)/CLK_TCK);
