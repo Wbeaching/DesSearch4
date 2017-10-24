@@ -5,7 +5,7 @@
 #include "DesFunc.h"
 #include "LookUpTables.h"
 #include "DiffDistribution.h"
-#define TEST_NUM 0xffffff
+#define TEST_NUM 0xfffffff
 void print32(const u32 x){
 	printf("%x\n",x);
 }
@@ -27,7 +27,7 @@ int main(){
 	//printf("%x\n",x);
 	start = clock();
 	for(int i=0;i<TEST_NUM;i++){
-		Expansion(y,x);
+		//Expansion(y,x);
 		//print8t8(y);
 		Permutation(&z,x);
 		//print32(z);
@@ -43,12 +43,13 @@ int main(){
 
 	start = clock();
 	GenDiffDistributionTable();
+	GenDiffDistributionTableMax();
 	end = clock();
 	printf("差分分布表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
 	start = clock();
 	for(int i=0;i<TEST_NUM;i++){
-		ExpansionTL(y,x);
+		//ExpansionTL(y,x);
 		//print8t8(y);
 		PermutationTL(&z,x);
 		//print32(z);

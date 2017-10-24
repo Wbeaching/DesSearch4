@@ -38,6 +38,36 @@ void bool2word(u32* output, bool* input){
 	*output = temp;
 }
 
+/*
+//64比特串转换成大小为48的bool数组
+void word2bool48(bool* output, u64 input){
+	for (int i = 0; i < 48; i++){
+		*(output + i) = (input >> (47 - i)) & 0x1;
+	}
+}
+
+//大小为48的bool数组转换成64比特串
+void bool2word48(u64* output, bool* input){
+	u64 temp = 0;
+	for (int i = 0; i <47 ; i++){
+		temp += *(input + i);
+		temp <<= 1;
+	}
+	temp += *(input + 47);
+	*output = temp;
+}
+
+//置换E
+void Expansion(u64* output, u32 input){
+	bool op[48], ip[32];
+	word2bool(ip, input);
+	for (int i = 0; i < 48; i++){
+		op[i] = ip[ETable[i]];
+	}
+	bool2word48(output, op);
+}*/
+
+
 //置换P
 void Permutation(u32* output, u32 input){
 	bool op[32], ip[32];
