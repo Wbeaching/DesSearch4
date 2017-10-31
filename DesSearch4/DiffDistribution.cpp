@@ -24,9 +24,13 @@ void GenDiffDistributionTable(){
 		}
 
 		for(int i=0;i<64;i++){
-			for(int j=0;j<64;j++){
+			for(int j=0;j<16;j++){
 				frequency=DDT_int[Si][i][j];
-				DDT[Si][i][j]=log(frequency)/log(2.0);
+				if(frequency==0){
+					DDT[Si][i][j]=0;
+				}else{
+					DDT[Si][i][j]=log(frequency)/log(2.0);
+				}
 			}
 		}
 

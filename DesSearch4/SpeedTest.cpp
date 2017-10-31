@@ -5,7 +5,8 @@
 #include "DesFunc.h"
 #include "LookUpTables.h"
 #include "DiffDistribution.h"
-#define TEST_NUM 0xfffffff
+#include "Search.h"
+#define TEST_NUM 0x0
 void print32(const u32 x){
 	printf("%x\n",x);
 }
@@ -44,6 +45,7 @@ int main(){
 	start = clock();
 	GenDiffDistributionTable();
 	GenDiffDistributionTableMax();
+	GenSearchInOrder();
 	end = clock();
 	printf("差分分布表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
@@ -56,5 +58,10 @@ int main(){
 	}
 	end = clock();
 	printf("查表time=%f\n",(double)(end-start)/CLK_TCK);
+
+	GenSearchInOrder();
+	int a0=0;
+	round_two_j(a0);
+	system("pause");
 	return 0;
 }
