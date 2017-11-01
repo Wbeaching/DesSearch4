@@ -130,7 +130,7 @@ void round_two_j(int a_count){
 	int aj=(a_count)+1;
 	//从第aj个s盒搜到第八个s盒
 	for(aj;aj<9;aj++){                                                    
-		printf("aj=%x\n",aj);                                                                  //限制条件，相邻S盒之间的输入差分存在相互制约
+		//printf("aj=%d\n",aj);                                                                  //限制条件，相邻S盒之间的输入差分存在相互制约
 		if(((aj-a_count)>1)&&(((deltX[a_count-1])&0x3)!=0))return;         /*如果前一轮搜的是S4，下一轮递归搜S6，S7，S8，那么deltX[S3]的最后两位必须为0，否则不能搜。
 		                                                                  这个地方犹豫了一下应该用break还是continue还是return
 		                                                                 举例说明，如果S2活跃，搜S3活跃的情况失败了，要搜S4活跃的情况，deltX[1]的后两位不为零，
@@ -139,7 +139,6 @@ void round_two_j(int a_count){
 			Prob[i-1]=64;
 			deltX[i-1]=deltY[i-1]=0;
 		}
-
 		int Si=aj-1;
 		if((aj==8)&&((deltX[6]&0x3)==0)){                             //首先考虑S8不活跃的情况,S7的最后两位必须为0
 			double temp=Prob[7];
@@ -150,18 +149,23 @@ void round_two_j(int a_count){
 			Prob[7]=temp;                  //如果round_three搜不到结果，返回，继续搜S8活跃的情况	
 		}
 		for(int count=8;count>0;count--){                           //count的取值为0-8
-			printf("count=%d\n",count);
+			//printf("count=%d\n",count);
 			//判断概率是否满足剪枝条件
+			for(int i=aj;i<9;i++){      
+			Prob[i]=64;
+			deltX[i]=deltY[i]=0;
+		    }
 			double temp=Prob[Si];
 			Prob[Si]=2*count;
-			P2=Prob[0]+Prob[1]+Prob[2]+Prob[3]+Prob[4]   +Prob[5]+Prob[6]+Prob[7];
-			if(P2<464) {
+			//if(Prob[Si]==10||Prob[Si]==8||Prob[Si]==6)printf("count=%d\n",count);
+			P2=Prob[0]+Prob[1]+Prob[2]+Prob[3]+Prob[4]+Prob[5]+Prob[6]+Prob[7];
+			if(P2<416) {
 				Prob[Si]=temp;
 				break;                            //跳出这个count循环，进行下一个aj的搜索
 			}
-
 			for(int index=0;index<256;index++){
-				printf("index=%x,DDT_SearchInOrderX=%x\n",index,DDT_SearchInOrderX[Si][count][index]);
+
+				//if(Prob[Si]==10||Prob[Si]==8)printf("index=%d,DDT_SearchInOrderX=%d\n",index,DDT_SearchInOrderX[Si][count][index]);
 				if(DDT_SearchInOrderX[Si][count][index]==0) break;     //本行搜索完，进入下一个count的搜索
 				//限制条件，相邻S盒之间的输入差分存在相互制约
 				int deltx=DDT_SearchInOrderX[Si][count][index];
