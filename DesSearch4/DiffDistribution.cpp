@@ -2,14 +2,16 @@
 #include "DesFunc.h"
 #include "DiffDistribution.h"
 #include <math.h>
+#include <stdio.h>
 
 unsigned int DDT_int[8][64][16]={0};
 double DDT[8][64][16]={0};
-double DDT_MaxOutput[8][64]={0};
-unsigned int DDT_MaxOutput_Index[8][64]={0};
 u8 DDT_SearchInOrderX[8][9][512]={0};
 u8 DDT_SearchInOrderY[8][9][512]={0};
 int DDT_SearchInOrderLength[8][9]={0};
+
+
+
 
 void GenDiffDistributionTable(){
 	double frequency;
@@ -26,45 +28,38 @@ void GenDiffDistributionTable(){
 		for(int i=0;i<64;i++){
 			for(int j=0;j<16;j++){
 				frequency=DDT_int[Si][i][j];
-				if(frequency==0){
-					DDT[Si][i][j]=0;
-				}else{
-					DDT[Si][i][j]=log(frequency)/log(2.0);
+				if(frequency!=0){
+					DDT[Si][i][j]=log(frequency)/log(2.0)-6.0;
 				}
 			}
 		}
-
 	}
 }
 
 void GenSearchInOrder(){
-	int count,index;
+	int frequency,index;
 	for(int Si=0;Si<8;Si++){
 		for(u8 x=0;x<64;x++){
 			for(u8 y=0;y<16;y++){
-				count=DDT_int[Si][x][y]/2;
-				index=DDT_SearchInOrderLength[Si][count];
-				DDT_SearchInOrderX[Si][count][index]=x;
-				DDT_SearchInOrderY[Si][count][index]=y;
-				DDT_SearchInOrderLength[Si][count]++;
+				frequency=DDT_int[Si][x][y]/2;
+				if(frequency!=0&&frequency!=32){
+					index=DDT_SearchInOrderLength[Si][frequency];
+					DDT_SearchInOrderX[Si][frequency][index]=x;
+					DDT_SearchInOrderY[Si][frequency][index]=y;
+					DDT_SearchInOrderLength[Si][frequency]++;
+				}
 			}
 		}
 	}
 }
 
-void GenDiffDistributionTableMax(){
-	double temp=0;
-	u8 temp_y;
-	for(int Si=0;Si<8;Si++){
-		for(int x=0;x<64;x++){
-			for(int y=0;y<16;y++){
-				if(DDT[Si][x][y]>temp){
-					temp=DDT[Si][x][y];
-					temp_y=y;
-				}
-			}
-			DDT_MaxOutput[Si][x]=temp;
-			DDT_MaxOutput_Index[Si][x]=temp_y;
+void print(int k){
+	printf("===================\n");
+	for(int i=8;i>0;i--){
+		for(int j=0;j<DDT_SearchInOrderLength[k][i];j++){
+			printf("%x %x: %f\t",DDT_SearchInOrderX[k][i][j],DDT_SearchInOrderY[k][i][j],DDT[k][DDT_SearchInOrderX[k][i][j]][DDT_SearchInOrderY[k][i][j]]);
 		}
+		printf("\n");
 	}
+	printf("===================\n");
 }

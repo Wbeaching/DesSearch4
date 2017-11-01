@@ -1,19 +1,84 @@
+#include "Search.h"
 #include "Types.h"
 #include "DesFunc.h"
 #include "LookUpTables.h"
 #include "DiffDistribution.h"
 #include <stdio.h>
-/*#define N 3
+#define N 3
 
 double B[N+1];
-double p[N+1]={0};
 double B_n_bar;
+
 int a[9]={0};
-double p_[N+1][8];
-u8 dx[N+1][8]={0};
-u8 dy[N+1][8]={0};
+double p[N+1]={0};
+double p_[N+1][9];
 
+u8 dx[N+1][9]={0};
+u8 dy[N+1][9]={0};
 
+void Round_3(){
+	printf("dx:");
+	for(int i=1;i<=8;i++){
+		printf("%x ",dx[2][i]);
+	}
+	printf("\ndy:");
+	for(int i=1;i<=8;i++){
+		printf("%x ",dy[2][i]);
+	}
+	printf("\np:%f\n==============\n",p[2]);
+}
+
+void Round_2_(int j){
+	for(a[j]=a[j-1]+1;a[j]<=8;a[j]++){
+		if(j==1){
+			if(a[j]==1){
+				for(int count=8;count>0;count--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][count];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][count][index];
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][count][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
+						if(p[2]>-3){
+							Round_3();
+							//Round_2_(j+1);
+						}
+					}
+				}
+			}
+			else{
+				for(int count=8;count>0;count--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][count];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][count][index];
+						if((dx[2][a[j]]&0x30)!=0x00){
+							continue;
+						}
+						for(int i=a[j-1]+1;i<a[j];i++){
+							dx[2][i]=0;
+							dy[2][i]=0;
+						}
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][count][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
+						if(p[2]>-3){
+							Round_3();
+						}
+					}
+				}
+			}
+		}
+	}
+}
+							
+
+/*
 void Round_1(){
 	u8 temp[8];
 	for(u32 x=0;x<=0xffffffff;x++){
@@ -118,7 +183,7 @@ void Round_2_(int j,u8 prefixThisRound,u8 suffixThisRound){
 
 					if(j==8)
 */					
-
+/*
 //遍历8个s盒的输入差分，它们之间存在相互制约
 double Prob[8]={64,64,64,64,64,64,64,64};    //记录的是频数的以二为底的真数值,初始值设为最大值6
 double P2=0;                              //对 round_two_j中用到的数组进行声明
@@ -131,10 +196,8 @@ void round_two_j(int a_count){
 	//从第aj个s盒搜到第八个s盒
 	for(aj;aj<9;aj++){                                                    
 		printf("aj=%x\n",aj);                                                                  //限制条件，相邻S盒之间的输入差分存在相互制约
-		if(((aj-a_count)>1)&&(((deltX[a_count-1])&0x3)!=0))return;         /*如果前一轮搜的是S4，下一轮递归搜S6，S7，S8，那么deltX[S3]的最后两位必须为0，否则不能搜。
-		                                                                  这个地方犹豫了一下应该用break还是continue还是return
-		                                                                 举例说明，如果S2活跃，搜S3活跃的情况失败了，要搜S4活跃的情况，deltX[1]的后两位不为零，
-		                                                                 那必须返回上一层递归，找一个deltX[1]的后两位等于零的值，所以应该是return */
+		if(((aj-a_count)>1)&&(((deltX[a_count-1])&0x3)!=0))return;         
+		//如果前一轮搜的是S4，下一轮递归搜S6，S7，S8，那么deltX[S3]的最后两位必须为0，否则不能搜。举例说明，如果S2活跃，搜S3活跃的情况失败了，要搜S4活跃的情况，deltX[1]的后两位不为零，那必须返回上一层递归，找一个deltX[1]的后两位等于零的值，所以应该是return
 		for(int i=(a_count)+1;i<aj;i++){      //第a_count+1到第aj-1个s盒都不活跃，输入输出差分为零。
 			Prob[i-1]=64;
 			deltX[i-1]=deltY[i-1]=0;
@@ -152,10 +215,14 @@ void round_two_j(int a_count){
 		for(int count=8;count>0;count--){                           //count的取值为0-8
 			printf("count=%d\n",count);
 			//判断概率是否满足剪枝条件
+			for(int i=aj;i<9;i++){     
+			Prob[aj]=64;
+			deltX[aj]=deltY[aj]=0;
+		}
 			double temp=Prob[Si];
 			Prob[Si]=2*count;
 			P2=Prob[0]+Prob[1]+Prob[2]+Prob[3]+Prob[4]   +Prob[5]+Prob[6]+Prob[7];
-			if(P2<464) {
+			if(P2<462) {
 				Prob[Si]=temp;
 				break;                            //跳出这个count循环，进行下一个aj的搜索
 			}
@@ -181,3 +248,4 @@ void round_two_j(int a_count){
 
 	}
 }
+*/
