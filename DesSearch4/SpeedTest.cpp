@@ -60,7 +60,7 @@ int main(){
 	
 
 	//print(0);
-	Round_2_(1);
+	Round_2();
 	system("pause");
 	return 0;
 }

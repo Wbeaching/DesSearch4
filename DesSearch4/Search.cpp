@@ -4,6 +4,8 @@
 #include "LookUpTables.h"
 #include "DiffDistribution.h"
 #include <stdio.h>
+#include <fstream>
+#include <iostream>
 #define N 3
 
 double B[N+1];
@@ -16,59 +18,95 @@ double p_[N+1][9];
 u8 dx[N+1][9]={0};
 u8 dy[N+1][9]={0};
 
+FILE* stream;	
+
 void Round_3(){
-	printf("dx:");
+	fprintf(stream,"dx:");
 	for(int i=1;i<=8;i++){
-		printf("%x ",dx[2][i]);
+		fprintf(stream,"%x ",dx[2][i]);
 	}
-	printf("\ndy:");
+	fprintf(stream,"\ndy:");
 	for(int i=1;i<=8;i++){
-		printf("%x ",dy[2][i]);
+		fprintf(stream,"%x ",dy[2][i]);
 	}
-	printf("\np:%f\n==============\n",p[2]);
+	fprintf(stream,"\np:%f\n==============\n",p[2]);
+}
+
+void ResetCharacter(int k,int l){
+	for(int i=k+1;i<=8;i++){
+		if(i!=l){
+			dx[2][i]=0;
+			dy[2][i]=0;
+		}
+	}
+}
+
+void AddWeight(int j){
+	p[2]=0;
+	for(int k=1;k<=j;k++){
+		p[2]+=p_[2][k];
+	}
 }
 
 void Round_2_(int j){
 	for(a[j]=a[j-1]+1;a[j]<=8;a[j]++){
-		if(j==1){
-			if(a[j]==1){
-				for(int count=8;count>0;count--){
-					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][count];index++){
-						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][count][index];
-						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][count][index];
-						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
-						p[2]=0;
-						for(int k=1;k<=j;k++){
-							p[2]+=p_[2][k];
-						}
-						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
-						if(p[2]>-3){
+		
+		//µÝ¹éÍË³öÌõ¼þ
+		if(a[j]==8){
+			if( (dx[2][7]&0x3)==0 && (dx[2][1]&0x30)==0 ){
+				dx[2][8]=0;
+				dy[2][8]=0;
+				ResetCharacter(a[j-1],a[j]);
+				p_[2][j]=0;
+				AddWeight(j);
+				if(p[2]>-6.1){
+					Round_3();
+				}
+			}
+			for(int frequency=8;frequency>0;frequency--){
+				for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+					dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
+					ResetCharacter(a[j-1],8);
+					if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
+						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
+						AddWeight(j);
+						if(p[2]>-6.1){
 							Round_3();
-							//Round_2_(j+1);
 						}
 					}
 				}
 			}
-			else{
-				for(int count=8;count>0;count--){
-					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][count];index++){
-						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][count][index];
-						if((dx[2][a[j]]&0x30)!=0x00){
-							continue;
-						}
-						for(int i=a[j-1]+1;i<a[j];i++){
-							dx[2][i]=0;
-							dy[2][i]=0;
-						}
-						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][count][index];
-						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
-						p[2]=0;
-						for(int k=1;k<=j;k++){
-							p[2]+=p_[2][k];
-						}
-						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
-						if(p[2]>-3){
-							Round_3();
+		}else if(a[j]==1){
+			for(int frequency=8;frequency>0;frequency--){
+				for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+					dx[2][1]=DDT_SearchInOrderX[0][frequency][index];
+					ResetCharacter(0,1);
+					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
+					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
+					AddWeight(j);
+					if(p[2]>-6.1){
+						Round_2_(j+1);
+					}
+				}
+			}
+		}else{
+			if(j!=1 && (dx[2][a[j-1]]&0x3)!=0){
+				if(a[j]!=(a[j-1]+1)){
+					continue;
+				}
+			}else{
+				for(int frequency=8;frequency>0;frequency--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+						if( (dx[2][a[j]]&0x30) == ((dx[2][a[j-1]]&0x3)<<4) ){
+							ResetCharacter(a[j-1],a[j]);
+							dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+							p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+							AddWeight(j);
+							if(p[2]>-6.1){
+								Round_2_(j+1);
+							}
 						}
 					}
 				}
@@ -76,7 +114,126 @@ void Round_2_(int j){
 		}
 	}
 }
-							
+/*void Round_2_(int j){
+	if(j==1){	
+		for(a[j]=a[j-1]+1;a[j]<=8;a[j]++){
+			if(a[j]==1){
+				for(int frequency=8;frequency>0;frequency--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+						for(int i=a[j]+1;i<=8;i++){
+							dx[2][i]=0;
+							dy[2][i]=0;
+						}
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
+						if(p[2]>-6.1){
+							Round_3();
+							Round_2_(j+1);
+						}
+					}
+				}
+			}
+			else{
+				for(int frequency=8;frequency>0;frequency--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+						if((dx[2][a[j]]&0x30)!=0x00){
+							continue;
+						}
+						for(int i=a[j-1]+1;i<=8;i++){
+							if(i!=a[j]){
+								dx[2][i]=0;
+								dy[2][i]=0;
+							}
+						}
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
+						if(p[2]>-6.1){
+							Round_3();
+							Round_2_(j+1);
+						}
+					}
+				}
+			}
+		}
+	}
+	else{
+		for(a[j]=a[j-1]+1;a[j]<=8;a[j]++){
+			if(a[j]==(a[j-1]+1)){
+				for(int frequency=8;frequency>0;frequency--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+						if( (dx[2][a[j]]&0x30) != ((dx[2][a[j]-1]&0x3)<<4) ){
+							continue;
+						}
+						for(int i=a[j]+1;i<=8;i++){
+							dx[2][i]=0;
+							dy[2][i]=0;
+						}
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						if(p[2]>-6.1){
+							Round_3();
+							if(j!=8){
+								Round_2_(j+1);
+							}
+						}
+					}
+				}
+			}
+			else if((dx[2][a[j-1]]&0x3)==0){
+				for(int frequency=8;frequency>0;frequency--){
+					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+						if( (dx[2][a[j]]&0x30) != 0x00 ){
+							continue;
+						}
+						for(int i=a[j-1]+1;i<=8;i++){
+							if(i!=a[j]){
+								dx[2][i]=0;
+								dy[2][i]=0;
+							}
+						}
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						p[2]=0;
+						for(int k=1;k<=j;k++){
+							p[2]+=p_[2][k];
+						}
+						//if((p[1]+p[2]+B[N-2])>=B_n_bar){
+						if(p[2]>-6.1){
+							Round_3();
+							if(j!=8){
+								Round_2_(j+1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}*/
+						
+void Round_2(){
+	stream = fopen( "fprintf.txt", "w" );
+	Round_2_(1);
+	fclose(stream);
+}
 
 /*
 void Round_1(){
