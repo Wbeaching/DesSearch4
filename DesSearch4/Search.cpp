@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #define N 3
+#define WB -6.1
 
 double B[N+1];
 double B_n_bar;
@@ -28,6 +29,10 @@ void Round_3(){
 	fprintf(stream,"\ndy:");
 	for(int i=1;i<=8;i++){
 		fprintf(stream,"%x ",dy[2][i]);
+	}
+	fprintf(stream,"\na_i:");
+	for(int i=1;i<=8;i++){
+		fprintf(stream,"%d ",a[i]);
 	}
 	fprintf(stream,"\np:%f\n==============\n",p[2]);
 }
@@ -53,13 +58,18 @@ void Round_2_(int j){
 		
 		//µÝ¹éÍË³öÌõ¼þ
 		if(a[j]==8){
-			if( (dx[2][7]&0x3)==0 && (dx[2][1]&0x30)==0 ){
-				dx[2][8]=0;
+			if(j!=1 && (dx[2][a[j-1]]&0x3)!=0){
+				if(a[j-1]!=7){
+					break;
+				}
+			}
+			dx[2][8]=0;
+			ResetCharacter(a[j-1],8);
+			if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
 				dy[2][8]=0;
-				ResetCharacter(a[j-1],a[j]);
 				p_[2][j]=0;
 				AddWeight(j);
-				if(p[2]>-6.1){
+				if(p[2]>WB){
 					Round_3();
 				}
 			}
@@ -71,7 +81,7 @@ void Round_2_(int j){
 						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j);
-						if(p[2]>-6.1){
+						if(p[2]>WB){
 							Round_3();
 						}
 					}
@@ -85,7 +95,7 @@ void Round_2_(int j){
 					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
 					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
 					AddWeight(j);
-					if(p[2]>-6.1){
+					if(p[2]>WB){
 						Round_2_(j+1);
 					}
 				}
@@ -93,20 +103,19 @@ void Round_2_(int j){
 		}else{
 			if(j!=1 && (dx[2][a[j-1]]&0x3)!=0){
 				if(a[j]!=(a[j-1]+1)){
-					continue;
+					break;
 				}
-			}else{
-				for(int frequency=8;frequency>0;frequency--){
-					for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
-						dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
-						if( (dx[2][a[j]]&0x30) == ((dx[2][a[j-1]]&0x3)<<4) ){
-							ResetCharacter(a[j-1],a[j]);
-							dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
-							p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
-							AddWeight(j);
-							if(p[2]>-6.1){
-								Round_2_(j+1);
-							}
+			}
+			for(int frequency=8;frequency>0;frequency--){
+				for(int index=0;index<DDT_SearchInOrderLength[a[j]-1][frequency];index++){
+					dx[2][a[j]]=DDT_SearchInOrderX[a[j]-1][frequency][index];
+					ResetCharacter(a[j-1],a[j]);
+					if( (dx[2][a[j]]&0x30) == ((dx[2][a[j]-1]&0x3)<<4) ){
+						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
+						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
+						AddWeight(j);
+						if(p[2]>WB){
+							Round_2_(j+1);
 						}
 					}
 				}
