@@ -44,6 +44,7 @@ int main(){
 
 	start = clock();
 	GenDiffDistributionTable();
+	GenDiffDistributionTableMax();
 	GenSearchInOrder();
 	end = clock();
 	printf("差分分布表生成time=%f\n",(double)(end-start)/CLK_TCK);
@@ -59,8 +60,9 @@ int main(){
 	printf("查表time=%f\n",(double)(end-start)/CLK_TCK);
 	
 
-	//print(0);
-	Round_2();
+	//printMaxOutput();
+	//printDDT(0);
+	Round_1();
 	system("pause");
 	return 0;
 }

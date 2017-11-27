@@ -9,8 +9,8 @@ double DDT[8][64][16]={0};
 u8 DDT_SearchInOrderX[8][9][512]={0};
 u8 DDT_SearchInOrderY[8][9][512]={0};
 int DDT_SearchInOrderLength[8][9]={0};
-
-
+double DDT_MaxOutput[8][64];
+u8 DDT_MaxOutput_Index[8][64];
 
 
 void GenDiffDistributionTable(){
@@ -53,11 +53,43 @@ void GenSearchInOrder(){
 	}
 }
 
-void print(int k){
+void GenDiffDistributionTableMax(){
+	int frequency;
+	u8 index;
+	for(int Si=0;Si<8;Si++){
+		DDT_MaxOutput[Si][0]=0;
+		DDT_MaxOutput_Index[Si][0]=0;
+		for(u8 x=1;x<64;x++){
+			frequency=0;
+			for(u8 y=0;y<16;y++){
+				if(DDT_int[Si][x][y]>frequency){
+					frequency=DDT_int[Si][x][y];
+					index=y;
+				}
+			}
+			DDT_MaxOutput[Si][x]=log((double)frequency)/log(2.0)-6.0;
+			DDT_MaxOutput_Index[Si][x]=index;
+		}
+	}
+}
+
+void printMaxOutput(){
+	printf("===================\nMaxOutput:\n");
+	for(int i=0;i<8;i++){
+		printf("Si:%d\n",i);
+		for(int j=0;j<64;j++){
+			printf("%f %x\t",DDT_MaxOutput[i][j],DDT_MaxOutput_Index[i][j]);
+		}
+		printf("\n");
+	}
 	printf("===================\n");
-	for(int i=8;i>0;i--){
-		for(int j=0;j<DDT_SearchInOrderLength[k][i];j++){
-			printf("%x %x: %f\t",DDT_SearchInOrderX[k][i][j],DDT_SearchInOrderY[k][i][j],DDT[k][DDT_SearchInOrderX[k][i][j]][DDT_SearchInOrderY[k][i][j]]);
+}
+
+void printDDT(int Si){
+	printf("===================\nDDT:\n");
+	for(int i=0;i<64;i++){
+		for(int j=0;j<16;j++){
+			printf("%f ",DDT[Si][i][j]);
 		}
 		printf("\n");
 	}
