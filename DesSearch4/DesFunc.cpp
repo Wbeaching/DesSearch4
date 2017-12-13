@@ -16,7 +16,7 @@ void pick6(u8* output, u32 input, int index){
 //¿©’π÷√ªªE
 void Expansion(u8* output, u32 input){
 	for (int i = 0; i < 8; i++){
-		pick6(output + i, input, (4 * i - 1) % 32);
+		pick6(output + i, input, ((4 * i - 1) % 32+32)%32);
 	}
 }
 
@@ -103,4 +103,14 @@ void Substitution(u8* output,u8 input,int index){
 	x1=(x&0x1)|((x>>4)&0x2);
 	x2=(x>>1)&0xf;
 	*output=S[index][x1][x2];
+}
+
+void print32(const u32 x){
+	printf("%x\n",x);
+}
+void print8t8(const u8* y){
+	for(int i=0;i<8;i++){
+		printf("%x",y[i]);
+	}
+	printf("\n");
 }

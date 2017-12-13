@@ -7,19 +7,19 @@
 #include <fstream>
 #include <iostream>
 #define N 2
-#define WB -6.1
 
 double B[N+1]={0,-2.0,0};
 
-double B_n_bar=-6.1;
+static double B_n_bar;
 
 int a[9]={0};
-double p[N+1]={0};
+double p[N+1];
 double p_[N+1][9];
 
 u8 dx[N+1][9]={0};
 u8 dy[N+1][9]={0};
 
+bool flag=0;
 FILE* stream;	
 
 void Round_3(){
@@ -44,6 +44,7 @@ void Round_3(){
 		fprintf(stream,"%d ",a[i]);
 	}*/
 	fprintf(stream,"\np1:%f\tp2:%f\n==============\n",p[1],p[2]);
+	//B_n_bar=p[1]+p[2];printf("B_n_bar:%f\n",B_n_bar);
 }
 
 void ResetCharacter(int k,int l){
@@ -62,6 +63,9 @@ void AddWeight(int j){
 	}
 }
 
+void Round_(int i){
+	
+
 void Round_2_(int j){
 	for(a[j]=a[j-1]+1;a[j]<=8;a[j]++){
 		
@@ -72,14 +76,16 @@ void Round_2_(int j){
 					break;
 				}
 			}
-			dx[2][8]=0;
-			ResetCharacter(a[j-1],8);
-			if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
-				dy[2][8]=0;
-				p_[2][j]=0;
-				AddWeight(j);
-				if(p[2]+p[1]>WB){
-					Round_3();
+			if(j!=1||flag==1){
+				dx[2][8]=0;
+				ResetCharacter(a[j-1],8);
+				if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
+					dy[2][8]=0;
+					p_[2][j]=0;
+					AddWeight(j);
+					if((p[2]+p[1])>B_n_bar){
+						Round_3();
+					}
 				}
 			}
 			for(int frequency=8;frequency>0;frequency--){
@@ -90,7 +96,7 @@ void Round_2_(int j){
 						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j);
-						if(p[2]+p[1]>WB){
+						if((p[2]+p[1])>B_n_bar){
 							Round_3();
 						}
 					}
@@ -104,7 +110,7 @@ void Round_2_(int j){
 					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
 					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
 					AddWeight(j);
-					if(p[2]>WB){
+					if((p[2]+p[1])>=B_n_bar){
 						Round_2_(j+1);
 					}
 				}
@@ -123,7 +129,7 @@ void Round_2_(int j){
 						dy[2][a[j]]=DDT_SearchInOrderY[a[j]-1][frequency][index];
 						p_[2][j]=DDT[a[j]-1][dx[2][a[j]]][dy[2][a[j]]];
 						AddWeight(j);
-						if(p[2]>WB){
+						if((p[2]+p[1])>=B_n_bar){
 							Round_2_(j+1);
 						}
 					}
@@ -139,7 +145,15 @@ void Round_2(){
 
 
 void Round_1(){
+	B_n_bar=-8.1;
 	stream = fopen( "fprintf.txt", "w" );
+	ExpansionTL(dx[1]+1,0);
+	for(int Si=0;Si<8;Si++){
+		dy[1][Si+1]=0;
+	}
+	flag=0;
+	Round_2();
+	flag=1;
 	for(u32 x=1;x<0xffffffff;x++){
 		ExpansionTL(dx[1]+1,x);
 		p[1]=0;
@@ -150,6 +164,7 @@ void Round_1(){
 		if((p[1]+B[N-1])>=B_n_bar){
 			Round_2();
 			printf("##:%x\n",x);
+			print8t8(dx[1]+1);
 		}
 	}
 	fclose(stream);

@@ -7,15 +7,7 @@
 #include "DiffDistribution.h"
 #include "Search.h"
 #define TEST_NUM 0x0
-void print32(const u32 x){
-	printf("%x\n",x);
-}
-void print8t8(const u8* y){
-	for(int i=0;i<8;i++){
-		printf("%x",y[i]);
-	}
-	printf("\n");
-}
+
 
 int main(){
 	clock_t start,end;
@@ -59,7 +51,6 @@ int main(){
 	end = clock();
 	printf("²é±ítime=%f\n",(double)(end-start)/CLK_TCK);
 	
-
 	//printMaxOutput();
 	//printDDT(0);
 	Round_1();
