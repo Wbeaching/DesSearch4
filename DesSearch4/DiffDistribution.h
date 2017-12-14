@@ -10,3 +10,8 @@ void printDDT(int Si);
 extern double DDT_MaxOutput[8][64];
 extern u8 DDT_MaxOutput_Index[8][64];
 void GenDiffDistributionTableMax();
+
+extern u8 DDT_SearchInOrderWithFixedX[8][9][64][16];
+extern int DDT_SearchInOrderWithFixedXLength[8][9][64];
+void GenSearchInOrderWithFixedX();
+void print(int SboxIndex,u8 inputMask);

@@ -12,6 +12,8 @@ int DDT_SearchInOrderLength[8][9]={0};
 double DDT_MaxOutput[8][64];
 u8 DDT_MaxOutput_Index[8][64];
 
+u8 DDT_SearchInOrderWithFixedX[8][9][64][16]={0};
+int DDT_SearchInOrderWithFixedXLength[8][9][64]={0};
 
 void GenDiffDistributionTable(){
 	double frequency;
@@ -30,6 +32,22 @@ void GenDiffDistributionTable(){
 				frequency=DDT_int[Si][i][j];
 				if(frequency!=0){
 					DDT[Si][i][j]=log(frequency)/log(2.0)-6.0;
+				}
+			}
+		}
+	}
+}
+
+void GenSearchInOrderWithFixedX(){
+	int frequency,index;
+	for(int Si=0;Si<8;Si++){
+		for(u8 x=0;x<64;x++){
+			for(u8 y=0;y<16;y++){
+				frequency=DDT_int[Si][x][y]/2;
+				if(frequency!=0&&frequency!=32){
+					index=DDT_SearchInOrderWithFixedXLength[Si][frequency][x];
+					DDT_SearchInOrderWithFixedX[Si][frequency][x][index]=y;
+					DDT_SearchInOrderWithFixedXLength[Si][frequency][x]++;
 				}
 			}
 		}
@@ -93,5 +111,23 @@ void printDDT(int Si){
 		}
 		printf("\n");
 	}
+	printf("===================\n");
+}
+
+
+void print(int SboxIndex,u8 inputMask){
+	for(int freq=8;freq>0;freq--){
+		printf("freq:%d\n",freq);
+		for(int index=0;index<DDT_SearchInOrderWithFixedXLength[SboxIndex][freq][inputMask];index++){
+			printf("%x\t",DDT_SearchInOrderWithFixedX[SboxIndex][freq][inputMask][index]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	for(int i=0;i<16;i++){
+		printf("%d\t",DDT_int[SboxIndex][inputMask][i]);
+	}
+	printf("\n");
 	printf("===================\n");
 }

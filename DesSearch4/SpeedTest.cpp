@@ -38,6 +38,7 @@ int main(){
 	GenDiffDistributionTable();
 	GenDiffDistributionTableMax();
 	GenSearchInOrder();
+	GenSearchInOrderWithFixedX();
 	end = clock();
 	printf("差分分布表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
@@ -53,6 +54,15 @@ int main(){
 	
 	//printMaxOutput();
 	//printDDT(0);
+	//print(5,0x8);
+	
+	/*u32 x1;
+	PermutationTL(&x1,0x60000000);
+	printf("%x",x1);
+	u8 x2[8];
+	Expansion(x2,x1);
+	print8t8(x2);*/
+
 	Round_1();
 	system("pause");
 	return 0;

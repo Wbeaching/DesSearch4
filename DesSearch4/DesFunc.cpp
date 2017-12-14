@@ -1,25 +1,30 @@
 #include "Types.h"
 #include "Tables.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-//从input中的第index个bool值开始向后取6个
-void pick6(u8* output, u32 input, int index){
-	if (index > 26){
-		int carry = 32 - index;
-		*output = ((input << (index - 26)) ^ (input >> (58 - index))) & 0x3f;
+/*-----------------随机数生成----------------------------*/
+//生成32比特随机数
+u32 genRandom32(){
+	u32 x;
+	srand((unsigned long)time(NULL));
+	for(int i=0;i<3;i++){
+		x=x<<15|rand();
 	}
-	else{
-		*output = (input >> (26 - index)) & 0x3f;
+	return x;
+}
+//生成64比特随机数
+u32 genRandom64(){
+	u32 x;
+	srand((unsigned long)time(NULL));
+	for(int i=0;i<5;i++){
+		x=x<<15|rand();
 	}
+	return x;
 }
 
-//扩展置换E
-void Expansion(u8* output, u32 input){
-	for (int i = 0; i < 8; i++){
-		pick6(output + i, input, ((4 * i - 1) % 32+32)%32);
-	}
-}
-
+/*-----------------类型转换函数----------------------------*/
 //32比特串转换成大小为32的bool数组
 void word2bool(bool* output, u32 input){
 	for (int i = 0; i < 32; i++){
@@ -38,7 +43,43 @@ void bool2word(u32* output, bool* input){
 	*output = temp;
 }
 
-/*
+//8个6比特数组转换成64比特串
+void SboxInput2word(u64* output, u8* input){
+	u64 temp=0;
+	for(int i =0;i<7;i++){
+		temp+=*(input+i);
+		temp<<=6;
+	}
+	temp+=*(input+7);
+	*output=temp;
+}
+
+//8个4比特数组转换成32比特串
+void SboxOutput2word(u32* output, u8* input){
+	u32 temp=0;
+	for(int i=0;i<7;i++){
+		temp+=*(input+i);
+		temp<<=4;
+	}
+	temp+=*(input+7);
+	*output=temp;
+}
+
+//64比特串转换成8个6比特数组
+void word2SboxInput(u8* output, u64 input){
+	for(int i=0;i<8;i++){
+		*(output+i)=(input>>(42-6*i))&0x3f;
+	}
+}
+
+//32比特串转换成8个4比特数组
+void word2SboxInput(u8* output, u32 input){
+	for(int i=0;i<8;i++){
+		*(output+i)=(input>>(28-4*i))&0x3f;
+	}
+}
+
+
 //64比特串转换成大小为48的bool数组
 void word2bool48(bool* output, u64 input){
 	for (int i = 0; i < 48; i++){
@@ -56,7 +97,7 @@ void bool2word48(u64* output, bool* input){
 	temp += *(input + 47);
 	*output = temp;
 }
-
+/*
 //置换E
 void Expansion(u64* output, u32 input){
 	bool op[48], ip[32];
@@ -67,7 +108,54 @@ void Expansion(u64* output, u32 input){
 	bool2word48(output, op);
 }*/
 
+/*-----------------扩展置换----------------------------*/
+//从input中的第index个bool值开始向后取6个
+void pick6(u8* output, u32 input, int index){
+	if (index > 26){
+		int carry = 32 - index;
+		*output = ((input << (index - 26)) ^ (input >> (58 - index))) & 0x3f;
+	}
+	else{
+		*output = (input >> (26 - index)) & 0x3f;
+	}
+}
 
+//扩展置换E
+void Expansion(u8* output, u32 input){
+	for (int i = 0; i < 8; i++){
+		pick6(output + i, input, ((4 * i - 1) % 32+32)%32);
+	}
+}
+
+//扩展置换E的逆之一
+void ExpansionConv1(u32* output, u64 input){
+	bool op[32], ip[48];
+	word2bool48(ip, input);
+	for (int i = 0; i < 32; i++){
+		op[i] = ip[unETable1[i]];
+	}
+	bool2word(output, op);
+}
+
+//扩展置换E的逆之二
+void ExpansionConv2(u32* output, u64 input){
+	bool op[32], ip[48];
+	word2bool48(ip, input);
+	for (int i = 0; i < 32; i++){
+		op[i] = ip[unETable2[i]];
+	}
+	bool2word(output, op);
+}
+
+bool ExpansionConvExist(u64 input){
+	u32 y,z;
+	ExpansionConv1(&y,input);
+	ExpansionConv2(&z,input);
+	return y==z;
+}
+
+
+/*-----------------置换P----------------------------*/
 //置换P
 void Permutation(u32* output, u32 input){
 	bool op[32], ip[32];
