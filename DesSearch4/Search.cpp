@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 4
+#define N 3
 
-double B[N]={0,0,-2.0,-6.830075};
+double B[N]={0,0,-2.0};
 
 static double B_n_bar=-14;
 
@@ -95,15 +95,17 @@ void Round__(int i,int j){
 void Round_N_(int j){
 	if(dx[N][j]==0){
 		dy[N][j]=0;
+		p_[N][j]=0;
 		if(j==8){
 			printAndSetBound();
 		}else{
 			Round_N_(j+1);
 		}
 	}else{
-		p[N]+=DDT_MaxOutput[j-1][dx[N][j]];
-		dy[N][j]=DDT_MaxOutput_Index[j-1][dx[1][j]];
-		if(p[N]<B_n_bar){
+		p_[N][j]=DDT_MaxOutput[j-1][dx[N][j]];
+		AddWeight(j,N);
+		dy[N][j]=DDT_MaxOutput_Index[j-1][dx[N][j]];
+		if(sumWeight(N)>B_n_bar){
 			if(j==8){
 				printAndSetBound();
 			}else{
@@ -147,7 +149,7 @@ void Round_2_(int j){
 					dy[2][8]=0;
 					p_[2][j]=0;
 					AddWeight(j,2);
-					if((p[2]+p[1])>=B_n_bar){
+					if(sumWeight(2)>=B_n_bar){
 						Round_(3);
 					}
 				}
@@ -230,6 +232,7 @@ void Round_1(){
 			printf("##:%x\n",x);
 			print8t8(dx[1]+1);
 		}
+		fflush(stream);
 	}
 	fclose(stream);
 }

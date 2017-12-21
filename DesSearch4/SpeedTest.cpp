@@ -63,6 +63,32 @@ int main(){
 	Expansion(x2,x1);
 	print8t8(x2);*/
 
+	/*u8 dx1[8]={0, 0, 0, 0, 0, 0, 0, 4 },dy2[8]={1, 0, 0, 0, 0, 0, 0, 0},dx3[8];
+
+	u64 x_i_2;
+	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
+	SboxInput2word(&x_i_2, dx1);
+	ExpansionConv1(&x_i_2_EConv,x_i_2);
+	SboxOutput2word(&y_i_1, dy2);
+	PermutationTL(&y_i_1_P,y_i_1);
+	x_i=x_i_2_EConv^y_i_1_P;
+	Expansion(dx3,x_i);
+	print8t8(dx1);
+	print8t8(dy2);
+	print8t8(dx3);
+	printf("%f\n",DDT[7][0xa][0x2]);
+	printf("%f\n",DDT[0][0x28][0x0]);
+
+	*/
+
+	u32 x1=0x60000000,y1=0x00808200,dy1;
+	u8 dx1[8];
+	Expansion(dx1,x1);
+	PermutationConv(&dy1,y1);
+	print8t8(dx1);
+	print32(dy1);
+	printf("%f\n",DDT[0][0xc][0xe]);
+
 	Round_1();
 	system("pause");
 	return 0;

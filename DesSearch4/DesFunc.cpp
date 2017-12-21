@@ -66,14 +66,14 @@ void SboxOutput2word(u32* output, u8* input){
 }
 
 //64比特串转换成8个6比特数组
-void word2SboxInput(u8* output, u64 input){
+void word642SboxInput(u8* output, u64 input){
 	for(int i=0;i<8;i++){
 		*(output+i)=(input>>(42-6*i))&0x3f;
 	}
 }
 
 //32比特串转换成8个4比特数组
-void word2SboxInput(u8* output, u32 input){
+void word322SboxInput(u8* output, u32 input){
 	for(int i=0;i<8;i++){
 		*(output+i)=(input>>(28-4*i))&0x3f;
 	}
@@ -162,6 +162,15 @@ void Permutation(u32* output, u32 input){
 	word2bool(ip, input);
 	for (int i = 0; i < 32; i++){
 		op[i] = ip[PTable[i]];
+	}
+	bool2word(output, op);
+}
+
+void PermutationConv(u32* output, u32 input){
+	bool op[32], ip[32];
+	word2bool(ip, input);
+	for (int i = 0; i < 32; i++){
+		op[i] = ip[unPTable[i]];
 	}
 	bool2word(output, op);
 }
