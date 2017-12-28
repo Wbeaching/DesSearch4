@@ -1,3 +1,5 @@
+#include <fstream>
+
 void Expansion(u8* output, u32 input);
 void Permutation(u32* output, u32 input);
 unsigned long long Expansion1(unsigned int x);
@@ -17,3 +19,6 @@ void bool2word48(u64* output, bool* input);
 void PermutationConv(u32* output, u32 input);
 void ExpansionConv1(u32* output, u64 input);
 void ExpansionConv2(u32* output, u64 input);
+
+void fprint8t8(const u8* y,FILE* stream);
+void fprintnum(const u8* y,FILE* stream);

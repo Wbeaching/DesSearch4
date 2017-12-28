@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 3
+#define N 5
 
-double B[N]={0,0,-2.0};
+double B[N]={0,0,-2.0,-4.0,-9.60768};
 
-static double B_n_bar=-14;
+static double B_n_bar=-15.0;
 
 int a[N+1][9]={0};
 double p[N+1];
@@ -70,9 +70,9 @@ void Round__(int i,int j){
 		dy[i][j]=0;
 		p_[i][j]=0;
 		if(j==8){
-			Round_(4);
+			Round_(i+1);
 		}else{
-			Round__(3,j+1);
+			Round__(i,j+1);
 		}
 	}else{
 		for(int frequency=8;frequency>0;frequency--){
@@ -80,7 +80,11 @@ void Round__(int i,int j){
 				dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
 				p_[i][j]=DDT[j-1][dx[i][j]][dy[i][j]];
 				AddWeight(j,i);
-				if(sumWeight(i)>B_n_bar){
+
+				//fprintf(stream,"The %d round till the %d sbox:%f\n",i,j,sumWeight(i));
+
+				if((sumWeight(i)+B[N-i])>B_n_bar){
+					
 					if(j==8){
 						Round_(i+1);
 					}else{
@@ -105,7 +109,12 @@ void Round_N_(int j){
 		p_[N][j]=DDT_MaxOutput[j-1][dx[N][j]];
 		AddWeight(j,N);
 		dy[N][j]=DDT_MaxOutput_Index[j-1][dx[N][j]];
+
+		//fprintf(stream,"The N Round till the %d sbox:%f\n",j,sumWeight(N));
+		//fprintf(stream,"sumWeight(N)>B_n_bar:%d\tB_n_bar:%f\n",sumWeight(N)>B_n_bar,B_n_bar);
+
 		if(sumWeight(N)>B_n_bar){
+			
 			if(j==8){
 				printAndSetBound();
 			}else{
@@ -124,10 +133,16 @@ void Round_(int i){
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
 	Expansion(dx[i]+1,x_i);
+
+	//fprintf(stream,"Differential of the %d round:\t",i);
+	//fprintnum(dx[i]+1,stream);
+	//fprint8t8(dx[i]+1,stream);
+
 	if(i==N){
 		p[N]=0;
 		Round_N_(1);
 	}else{
+		p[i]=0;
 		Round__(i,1);
 	}
 }
@@ -149,7 +164,7 @@ void Round_2_(int j){
 					dy[2][8]=0;
 					p_[2][j]=0;
 					AddWeight(j,2);
-					if(sumWeight(2)>=B_n_bar){
+					if((p[2]+p[1]+B[N-2])>=B_n_bar){
 						Round_(3);
 					}
 				}
@@ -162,7 +177,7 @@ void Round_2_(int j){
 						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j,2);
-						if((p[2]+p[1])>=B_n_bar){
+						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_(3);
 						}
 					}
@@ -176,7 +191,7 @@ void Round_2_(int j){
 					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
 					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
 					AddWeight(j,2);
-					if((p[2]+p[1])>=B_n_bar){
+					if((p[2]+p[1]+B[N-2])>=B_n_bar){
 						Round_2_(j+1);
 					}
 				}
@@ -195,7 +210,7 @@ void Round_2_(int j){
 						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
 						p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
 						AddWeight(j,2);
-						if((p[2]+p[1])>=B_n_bar){
+						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_2_(j+1);
 						}
 					}
@@ -211,7 +226,7 @@ void Round_2(){
 
 
 void Round_1(){
-	B_n_bar=-8.1;
+	
 	stream = fopen( "fprintf.txt", "w" );
 	ExpansionTL(dx[1]+1,0);
 	for(int Si=0;Si<8;Si++){

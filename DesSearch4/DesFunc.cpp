@@ -207,7 +207,20 @@ void print32(const u32 x){
 }
 void print8t8(const u8* y){
 	for(int i=0;i<8;i++){
-		printf("%x",y[i]);
+		printf("%x\t",y[i]);
 	}
 	printf("\n");
+}
+void fprint8t8(const u8* y,FILE* stream){
+	for(int i=0;i<8;i++){
+		fprintf(stream,"%x\t",y[i]);
+	}
+	fprintf(stream,"\n");
+}
+void fprintnum(const u8* y,FILE* stream){
+	int count=0;
+	for(int i=0;i<8;i++){
+		if(y[i]!=0) count++;
+	}
+	fprintf(stream,"#active Sboxes:%d\t",count);
 }

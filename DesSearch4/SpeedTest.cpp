@@ -81,13 +81,25 @@ int main(){
 
 	*/
 
-	u32 x1=0x60000000,y1=0x00808200,dy1;
+	/*u32 x1=0x60000000,y1=0x00808200,dy1;
 	u8 dx1[8];
 	Expansion(dx1,x1);
 	PermutationConv(&dy1,y1);
 	print8t8(dx1);
 	print32(dy1);
-	printf("%f\n",DDT[0][0xc][0xe]);
+	printf("%f\n",DDT[0][0xc][0xe]);*/
+	
+	/*u64 x_i_2;
+	u8 dx[9]={0};
+	u32 x_i_2_EConv,y_i_1=0x30,x_i,y_i_1_P;
+	SboxInput2word(&x_i_2, dx+1);
+	ExpansionConv1(&x_i_2_EConv,x_i_2);
+	
+	PermutationTL(&y_i_1_P,y_i_1);
+	x_i=x_i_2_EConv^y_i_1_P;
+	Expansion(dx+1,x_i);
+	print32(x_i);
+	print8t8(dx+1);*/
 
 	Round_1();
 	system("pause");
