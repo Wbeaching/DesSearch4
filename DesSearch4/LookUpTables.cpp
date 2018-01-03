@@ -5,6 +5,8 @@
 u8 ETableLookUp[4][256][8] = { 0 };
 u32 PTableLookUp[4][256] = { 0 };
 u32 EConvTableLookUp[6][256]={0};
+u8 SearchTable1[4][16]={0};//前两位，遍历中间两位
+u8 SearchTable2[4][4][4]={0};//前两位，后两位，遍历中间两位
 
 void set(u8* y,const u8* x){
 	for(int i=0;i<8;i++){
@@ -73,4 +75,19 @@ void PermutationTL(u32* output, u32 input){
 		y[i]=PTableLookUp[i][(x>>(8*i))&0xff];
 	}
 	*output=y[0]^y[1]^y[2]^y[3];
+}
+
+void GenSearchTables(){
+	u8 temp;
+	for(u8 i=0;i<4;i++){
+		temp=i<<4;
+		for(u8 j=0;j<16;j++){
+			SearchTable1[i][j]=j|temp;
+		}
+		for(u8 j=0;j<4;j++){
+			for(u8 k=0;k<4;k++){
+				SearchTable2[i][j][k]=temp|(k<<2)|j;
+			}
+		}
+	}
 }

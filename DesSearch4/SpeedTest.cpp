@@ -32,6 +32,7 @@ int main(){
 	GenETableLookUp();
 	GenPTableLookUp();
 	GenEConvTableLookUp();
+	GenSearchTables()
 	end = clock();
 	printf("查表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
