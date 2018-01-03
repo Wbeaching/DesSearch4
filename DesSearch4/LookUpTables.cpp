@@ -4,6 +4,7 @@
 
 u8 ETableLookUp[4][256][8] = { 0 };
 u32 PTableLookUp[4][256] = { 0 };
+u32 EConvTableLookUp[6][256]={0};
 
 void set(u8* y,const u8* x){
 	for(int i=0;i<8;i++){
@@ -32,6 +33,27 @@ void ExpansionTL(u8* output, u32 input){
 	for(int i=0;i<8;i++){
 		output[i]=y[0][i]|y[1][i]|y[2][i]|y[3][i];
 	}
+}
+
+void GenEConvTableLookUp(){
+	u64 x=0;
+	u32 y=0;
+	for(int i=0;i<6;i++){
+		for(u32 j=0;j<256;j++){
+			x=j<<(8*i);
+			ExpansionConv1(&y,x);
+			EConvTableLookUp[i][j]=y;
+		}
+	}
+}
+
+void ExpansionConvTL(u32* output, u64 input){
+	u64 x=input;
+	u32 y[6]={0};
+	for(int i=0;i<6;i++){
+		y[i]=EConvTableLookUp[i][(x>>(8*i))&0xff];
+	}
+	*output=y[0]^y[1]^y[2]^y[3]^y[4]^y[5];
 }
 
 void GenPTableLookUp(){

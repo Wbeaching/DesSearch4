@@ -31,6 +31,7 @@ int main(){
 	start = clock();
 	GenETableLookUp();
 	GenPTableLookUp();
+	GenEConvTableLookUp();
 	end = clock();
 	printf("查表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
@@ -100,8 +101,10 @@ int main(){
 	Expansion(dx+1,x_i);
 	print32(x_i);
 	print8t8(dx+1);*/
-
+	start = clock();
 	Round_1();
+	end = clock();
+	printf("搜索time=%f\n",(double)(end-start)/CLK_TCK);
 	system("pause");
 	return 0;
 }

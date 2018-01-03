@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 5
+#define N 4
 
-double B[N]={0,0,-2.0,-4.0,-9.60768};
+double B[N]={0,0,-2.0,-4.0};//,-9.60768};
 
-static double B_n_bar=-15.0;
+static double B_n_bar=-10.0;
 
 int a[N+1][9]={0};
 double p[N+1];
@@ -128,7 +128,7 @@ void Round_(int i){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
-	ExpansionConv1(&x_i_2_EConv,x_i_2);
+	ExpansionConvTL(&x_i_2_EConv,x_i_2);
 	SboxOutput2word(&y_i_1, dy[i-1]+1);
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
