@@ -149,7 +149,7 @@ void Round_(int i){
 
 void Round_2_(int j){
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
-		
+		ResetCharacter(a[2][j-1],a[2][j],2);
 		//ÍË³öÌõ¼þ
 		if(a[2][j]==8){
 			if(j!=1 && (dx[2][a[2][j-1]]&0x3)!=0){
@@ -159,7 +159,7 @@ void Round_2_(int j){
 			}
 			if(j!=1||flag==1){
 				dx[2][8]=0;
-				ResetCharacter(a[2][j-1],8,2);
+				
 				if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
 					dy[2][8]=0;
 					p_[2][j]=0;
@@ -169,18 +169,25 @@ void Round_2_(int j){
 					}
 				}
 			}
+			int prefix=dx[2][7]&0x3,suffix=dx[2][1]>>4;
 			for(int frequency=8;frequency>0;frequency--){
-				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+				
+				/*for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
 					ResetCharacter(a[2][j-1],8,2);
 					if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
-						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];*/
+				for(int index=0;index<DDT_SearchInOrderWithBifixLength[prefix][suffix][7][frequency];index++){
+					dx[2][8]=DDT_SearchInOrderXWithBifix[prefix][suffix][7][frequency][index];
+					dy[2][8]=DDT_SearchInOrderYWithBifix[prefix][suffix][7][frequency][index];
+					ResetCharacter(a[2][j-1],8,2);
+
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_(3);
 						}
-					}
+					//}
 				}
 			}
 		}else if(a[2][j]==1){
@@ -202,18 +209,25 @@ void Round_2_(int j){
 					break;
 				}
 			}
+			int prefix=dx[2][a[2][j]-1]&0x3;
 			for(int frequency=8;frequency>0;frequency--){
-				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+
+				/*for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
 					ResetCharacter(a[2][j-1],a[2][j],2);
 					if( (dx[2][a[2][j]]&0x30) == ((dx[2][a[2][j]-1]&0x3)<<4) ){
-						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
+						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];*/
+				for(int index=0;index<DDT_SearchInOrderWithPrefixLength[prefix][a[2][j]-1][frequency];index++){
+					dx[2][a[2][j]]=DDT_SearchInOrderXWithPrefix[prefix][a[2][j]-1][frequency][index];
+					dy[2][a[2][j]]=DDT_SearchInOrderYWithPrefix[prefix][a[2][j]-1][frequency][index];
+					ResetCharacter(a[2][j-1],a[2][j],2);
+
 						p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_2_(j+1);
 						}
-					}
+					//}
 				}
 			}
 		}
