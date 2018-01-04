@@ -128,7 +128,7 @@ void Round_(int i){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
-	ExpansionConvTL(&x_i_2_EConv,x_i_2);
+	ExpansionConv1(&x_i_2_EConv,x_i_2);
 	SboxOutput2word(&y_i_1, dy[i-1]+1);
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
@@ -228,13 +228,8 @@ void Round_2(){
 void Round_1(){
 	
 	stream = fopen( "fprintf.txt", "w" );
-	ExpansionTL(dx[1]+1,0);
-	for(int Si=0;Si<8;Si++){
-		dy[1][Si+1]=0;
-	}
-	flag=0;
-	Round_2();
-	flag=1;
+	
+	
 	for(u32 x=1;x<0xffffffff;x++){
 		ExpansionTL(dx[1]+1,x);
 		p[1]=0;

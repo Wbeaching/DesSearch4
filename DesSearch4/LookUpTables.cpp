@@ -5,8 +5,8 @@
 u8 ETableLookUp[4][256][8] = { 0 };
 u32 PTableLookUp[4][256] = { 0 };
 u32 EConvTableLookUp[6][256]={0};
-u8 SearchTable1[4][16]={0};//前两位，遍历中间两位
-u8 SearchTable2[4][4][4]={0};//前两位，后两位，遍历中间两位
+u32 SearchTable1[4][16]={0};//前两位，遍历中间两位
+u32 SearchTable2[4][4][4]={0};//前两位，后两位，遍历中间两位
 
 void set(u8* y,const u8* x){
 	for(int i=0;i<8;i++){
@@ -41,7 +41,7 @@ void GenEConvTableLookUp(){
 	u64 x=0;
 	u32 y=0;
 	for(int i=0;i<6;i++){
-		for(u32 j=0;j<256;j++){
+		for(u64 j=0;j<256;j++){
 			x=j<<(8*i);
 			ExpansionConv1(&y,x);
 			EConvTableLookUp[i][j]=y;

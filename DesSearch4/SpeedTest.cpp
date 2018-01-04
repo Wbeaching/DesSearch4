@@ -32,7 +32,7 @@ int main(){
 	GenETableLookUp();
 	GenPTableLookUp();
 	GenEConvTableLookUp();
-	GenSearchTables()
+	GenSearchTables();
 	end = clock();
 	printf("查表生成time=%f\n",(double)(end-start)/CLK_TCK);
 
@@ -103,6 +103,14 @@ int main(){
 	print32(x_i);
 	print8t8(dx+1);*/
 	start = clock();
+	/*u32 dy;
+	u32 dx1=genRandom32();
+	u64 dx;
+	ExpansionUsingTable(&dx,dx1);
+	ExpansionConv1(&dy,dx);
+	print32(dy);
+	ExpansionConvTL(&dy,dx);
+	print32(dy);*/
 	Round_1();
 	end = clock();
 	printf("搜索time=%f\n",(double)(end-start)/CLK_TCK);

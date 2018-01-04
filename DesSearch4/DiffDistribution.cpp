@@ -9,6 +9,15 @@ double DDT[8][64][16]={0};
 u8 DDT_SearchInOrderX[8][9][512]={0};
 u8 DDT_SearchInOrderY[8][9][512]={0};
 int DDT_SearchInOrderLength[8][9]={0};
+
+u8 DDT_SearchInOrderXWithPrefix[4][8][9][512]={0};
+u8 DDT_SearchInOrderYWithPrefix[4][8][9][512]={0};
+int DDT_SearchInOrderWithPrefixLength[4][8][9]={0};
+
+u8 DDT_SearchInOrderXWithBifix[4][4][8][9][512]={0};
+u8 DDT_SearchInOrderYWithBifix[4][4][8][9][512]={0};
+int DDT_SearchInOrderWithBifixLength[4][4][8][9]={0};
+
 double DDT_MaxOutput[8][64];
 u8 DDT_MaxOutput_Index[8][64];
 
@@ -55,9 +64,11 @@ void GenSearchInOrderWithFixedX(){
 }
 
 void GenSearchInOrder(){
-	int frequency,index;
+	int frequency,index,prefix,suffix;
 	for(int Si=0;Si<8;Si++){
 		for(u8 x=0;x<64;x++){
+			prefix=x>>4;
+			suffix=x&0x3;
 			for(u8 y=0;y<16;y++){
 				frequency=DDT_int[Si][x][y]/2;
 				if(frequency!=0&&frequency!=32){
@@ -65,6 +76,16 @@ void GenSearchInOrder(){
 					DDT_SearchInOrderX[Si][frequency][index]=x;
 					DDT_SearchInOrderY[Si][frequency][index]=y;
 					DDT_SearchInOrderLength[Si][frequency]++;
+					
+					index=DDT_SearchInOrderWithPrefixLength[prefix][Si][frequency];
+					DDT_SearchInOrderXWithPrefix[prefix][Si][frequency][index]=x;
+					DDT_SearchInOrderYWithPrefix[prefix][Si][frequency][index]=y;
+					DDT_SearchInOrderWithPrefixLength[prefix][Si][frequency]++;
+
+					index=DDT_SearchInOrderWithBifixLength[prefix][suffix][Si][frequency];
+					DDT_SearchInOrderXWithBifix[prefix][suffix][Si][frequency][index]=x;
+					DDT_SearchInOrderYWithBifix[prefix][suffix][Si][frequency][index]=y;
+					DDT_SearchInOrderWithBifixLength[prefix][suffix][Si][frequency]++;
 				}
 			}
 		}

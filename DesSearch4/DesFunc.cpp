@@ -15,8 +15,8 @@ u32 genRandom32(){
 	return x;
 }
 //生成64比特随机数
-u32 genRandom64(){
-	u32 x;
+u64 genRandom64(){
+	u64 x;
 	srand((unsigned long)time(NULL));
 	for(int i=0;i<5;i++){
 		x=x<<15|rand();
@@ -127,6 +127,15 @@ void Expansion(u8* output, u32 input){
 	}
 }
 
+void ExpansionUsingTable(u64* output, u32 input){
+	bool op[48], ip[32];
+	word2bool(ip, input);
+	for (int i = 0; i < 48; i++){
+		op[i] = ip[ETable[i]];
+	}
+	bool2word48(output, op);
+}
+
 //扩展置换E的逆之一
 void ExpansionConv1(u32* output, u64 input){
 	bool op[32], ip[48];
@@ -204,6 +213,9 @@ void Substitution(u8* output,u8 input,int index){
 
 void print32(const u32 x){
 	printf("%x\n",x);
+}
+void print64(const u64 x){
+	printf("%llx\n",x);
 }
 void print8t8(const u8* y){
 	for(int i=0;i<8;i++){
