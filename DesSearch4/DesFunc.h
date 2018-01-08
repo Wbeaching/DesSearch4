@@ -24,6 +24,8 @@ void PermutationConv(u32* output, u32 input);
 void ExpansionConv1(u32* output, u64 input);
 void ExpansionConv2(u32* output, u64 input);
 void ExpansionUsingTable(u64* output, u32 input);
+void ExpansionConvUsingShift(u32* output, u64 input);
 
 void fprint8t8(const u8* y,FILE* stream);
 void fprintnum(const u8* y,FILE* stream);
+void fprintTab(int j,FILE* stream);

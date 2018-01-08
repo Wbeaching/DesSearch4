@@ -136,6 +136,19 @@ void ExpansionUsingTable(u64* output, u32 input){
 	bool2word48(output, op);
 }
 
+void ExpansionConvUsingShift(u32* output, u64 input){
+	u64 x=input;
+	u64 y=0;
+	y=(x<<31)&0x8000000;
+	u64 mask=0x78000000;
+	for(int i=15;i>2;i-=2){
+		y^=((x>>i)&mask);
+		mask>>=4;
+	}
+	y^=((x>>1)&0x00000007);
+	*output=y;
+}
+
 //扩展置换E的逆之一
 void ExpansionConv1(u32* output, u64 input){
 	bool op[32], ip[48];
@@ -235,4 +248,10 @@ void fprintnum(const u8* y,FILE* stream){
 		if(y[i]!=0) count++;
 	}
 	fprintf(stream,"#active Sboxes:%d\t",count);
+}
+
+void fprintTab(int j,FILE* stream){
+	for(int i=0;i<j;i++){
+		fprintf(stream,"\t");
+	}
 }

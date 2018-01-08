@@ -8,10 +8,11 @@
 #include <iostream>
 #define N 4
 
-double B[N]={0,0,-2.0,-4.0};//,-9.60768};
+double B[N]={0,0,-2.0,-4.0};//,-9.607684};
 
-static double B_n_bar=-10.0;
+static double B_n_bar=-12.0;
 
+int num_a[N+1];
 int a[N+1][9]={0};
 double p[N+1];
 double p_[N+1][9];
@@ -128,7 +129,7 @@ void Round_(int i){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
-	ExpansionConv1(&x_i_2_EConv,x_i_2);
+	ExpansionUsingShift(&x_i_2_EConv,x_i_2);
 	SboxOutput2word(&y_i_1, dy[i-1]+1);
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
@@ -169,25 +170,25 @@ void Round_2_(int j){
 					}
 				}
 			}
-			int prefix=dx[2][7]&0x3,suffix=dx[2][1]>>4;
+			//int prefix=dx[2][7]&0x3,suffix=dx[2][1]>>4;
 			for(int frequency=8;frequency>0;frequency--){
 				
-				/*for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
 					ResetCharacter(a[2][j-1],8,2);
 					if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
-						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];*/
-				for(int index=0;index<DDT_SearchInOrderWithBifixLength[prefix][suffix][7][frequency];index++){
+						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+				/*for(int index=0;index<DDT_SearchInOrderWithBifixLength[prefix][suffix][7][frequency];index++){
 					dx[2][8]=DDT_SearchInOrderXWithBifix[prefix][suffix][7][frequency][index];
 					dy[2][8]=DDT_SearchInOrderYWithBifix[prefix][suffix][7][frequency][index];
-					ResetCharacter(a[2][j-1],8,2);
+					ResetCharacter(a[2][j-1],8,2);*/
 
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_(3);
 						}
-					//}
+					}
 				}
 			}
 		}else if(a[2][j]==1){
@@ -205,29 +206,29 @@ void Round_2_(int j){
 			}
 		}else{
 			if(j!=1 && (dx[2][a[2][j-1]]&0x3)!=0){
-				if(a[j]!=(a[j-1]+1)){
+				if(a[2][j]!=(a[2][j-1]+1)){
 					break;
 				}
 			}
-			int prefix=dx[2][a[2][j]-1]&0x3;
+			//int prefix=dx[2][a[2][j]-1]&0x3;
 			for(int frequency=8;frequency>0;frequency--){
 
-				/*for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
 					ResetCharacter(a[2][j-1],a[2][j],2);
 					if( (dx[2][a[2][j]]&0x30) == ((dx[2][a[2][j]-1]&0x3)<<4) ){
-						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];*/
-				for(int index=0;index<DDT_SearchInOrderWithPrefixLength[prefix][a[2][j]-1][frequency];index++){
+						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
+				/*for(int index=0;index<DDT_SearchInOrderWithPrefixLength[prefix][a[2][j]-1][frequency];index++){
 					dx[2][a[2][j]]=DDT_SearchInOrderXWithPrefix[prefix][a[2][j]-1][frequency][index];
 					dy[2][a[2][j]]=DDT_SearchInOrderYWithPrefix[prefix][a[2][j]-1][frequency][index];
-					ResetCharacter(a[2][j-1],a[2][j],2);
+					ResetCharacter(a[2][j-1],a[2][j],2);*/
 
 						p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_2_(j+1);
 						}
-					//}
+					}
 				}
 			}
 		}
@@ -238,8 +239,21 @@ void Round_2(){
 	Round_2_(1);
 }
 
+/*void Round_2(){
+	for(int r=1;r<=1;r++){
+		fprintf(stream,"dx%d:",r);
+		for(int i=1;i<=8;i++){
+			fprintf(stream,"%x ",dx[r][i]);
+		}
+		fprintf(stream,"\ndy%d:",r);
+		for(int i=1;i<=8;i++){
+			fprintf(stream,"%x ",dy[r][i]);
+		}
+		fprintf(stream,"\tp%d:%f\n",r,p[r]);
+	}
+}*/
 
-void Round_1(){
+/*void Round_1(){
 	
 	stream = fopen( "fprintf.txt", "w" );
 	
@@ -258,5 +272,101 @@ void Round_1(){
 		}
 		fflush(stream);
 	}
+	fclose(stream);
+}*/
+
+
+
+void Round_1_(int j){
+	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
+		ResetCharacter(a[1][j-1],a[1][j],1);
+		//ÍË³öÌõ¼þ
+		//fprintTab(j,stream);
+		//fprintf(stream,"j:%d a[1][j]:%d\n",j,a[1][j]);
+		if(a[1][j]==8){
+			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
+				if(a[1][j-1]!=7){
+					//fprintTab(j,stream);
+					//fprintf(stream,"break\n");
+					break;
+				}
+			}
+			if(j!=1||flag==1){
+				dx[1][8]=0;
+				
+				if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
+					dy[1][8]=0;
+					p_[1][j]=0;
+					AddWeight(j,1);
+					//fprintTab(j,stream);
+					//fprintf(stream,"p[1]:%f\n",p[1]);
+					if((p[1]+B[N-1])>=B_n_bar){
+						//fprintf(stream,"pass\n");
+						Round_2();
+					}
+				}
+			}
+			for(u8 x=1;x<64;x++){
+				dx[1][8]=x;
+				ResetCharacter(a[1][j-1],8,1);
+				if( (dx[1][8]&0x30)==((dx[1][7]&0x3)<<4) && (dx[1][8]&0x3)==((dx[1][1]&0x30)>>4) ){
+					dy[1][8]=DDT_MaxOutput_Index[7][dx[1][8]];
+					p_[1][j]=DDT_MaxOutput[7][dx[1][8]];
+					AddWeight(j,1);
+					//fprintTab(j,stream);
+					//fprintf(stream,"p[1]:%f\n",p[1]);
+					if((p[1]+B[N-1])>=B_n_bar){
+						//fprintTab(j,stream);
+						//fprintf(stream,"pass\n");
+						Round_2();
+					}
+				}
+			}
+		}else if(a[1][j]==1){
+			for(u8 x=1;x<64;x++){
+				dx[1][1]=x;
+				ResetCharacter(0,1,1);
+				dy[1][1]=DDT_MaxOutput_Index[0][dx[1][1]];
+				p_[1][j]=DDT_MaxOutput[0][dx[1][1]];
+				AddWeight(j,1);
+				//fprintTab(j,stream);
+				//fprintf(stream,"p[1]:%f\n",p[1]);
+				if((p[1]+B[N-1])>=B_n_bar){
+					//fprintTab(j,stream);
+					//fprintf(stream,"pass\n");
+					Round_1_(j+1);
+				}
+			}
+		}else{
+			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
+				if(a[1][j]!=(a[1][j-1]+1)){
+					//fprintTab(j,stream);
+					//fprintf(stream,"break\n");
+					break;
+				}
+			}
+			for(u8 x=1;x<64;x++){
+				dx[1][a[1][j]]=x;
+				ResetCharacter(a[1][j-1],a[1][j],1);
+				if( (dx[1][a[1][j]]&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
+					dy[1][a[1][j]]=DDT_MaxOutput_Index[a[1][j]-1][dx[1][a[1][j]]];
+					p_[1][j]=DDT_MaxOutput[a[1][j]-1][dx[1][a[1][j]]];
+					AddWeight(j,1);
+					//fprintTab(j,stream);
+					//fprintf(stream,"p[1]:%f\n",p[1]);
+					if((p[1]+B[N-1])>=B_n_bar){
+						//fprintTab(j,stream);
+						//fprintf(stream,"pass\n");
+						Round_1_(j+1);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Round_1(){
+	stream = fopen( "fprintf.txt", "w" );
+	Round_1_(1);
 	fclose(stream);
 }

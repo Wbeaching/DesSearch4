@@ -111,6 +111,7 @@ int main(){
 	print32(dy);
 	ExpansionConvTL(&dy,dx);
 	print32(dy);*/
+	//printMaxOutput();
 	Round_1();
 	end = clock();
 	printf("ËÑË÷time=%f\n",(double)(end-start)/CLK_TCK);
