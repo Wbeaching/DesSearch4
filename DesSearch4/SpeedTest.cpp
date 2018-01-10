@@ -113,6 +113,16 @@ int main(){
 	print32(dy);*/
 	//printMaxOutput();
 	Round_1();
+	/*u32 x1=0x19600000,y1=0x0,dy;
+	u8 dx1[8],dy1[8];
+	Expansion(dx1,x1);
+	print8t8(dx1);
+	PermutationConv(&dy,y1);
+	word322SboxOutput(dy1,dy);
+	print8t8(dy1);
+	for(int i=0;i<8;i++){
+		printf("%f\t",DDT[i][dx1[i]][dy1[i]]);
+	}*/
 	end = clock();
 	printf("ËÑË÷time=%f\n",(double)(end-start)/CLK_TCK);
 	system("pause");

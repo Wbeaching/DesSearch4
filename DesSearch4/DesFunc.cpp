@@ -73,7 +73,7 @@ void word642SboxInput(u8* output, u64 input){
 }
 
 //32比特串转换成8个4比特数组
-void word322SboxInput(u8* output, u32 input){
+void word322SboxOutput(u8* output, u32 input){
 	for(int i=0;i<8;i++){
 		*(output+i)=(input>>(28-4*i))&0x3f;
 	}

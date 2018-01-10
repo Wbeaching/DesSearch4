@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 4
+#define N 8
 
-double B[N]={0,0,-2.0,-4.0};//,-9.607684};
+double B[N]={0,0,-2.0,-4.0,-9.607684,-13.215366,-19.963827,-23.612152};
 
-static double B_n_bar=-12.0;
+static double B_n_bar=-31.0;
 
 int num_a[N+1];
 int a[N+1][9]={0};
@@ -20,7 +20,7 @@ double p_[N+1][9];
 u8 dx[N+1][9]={0};
 u8 dy[N+1][9]={0};
 
-bool flag=0;
+bool activeflag=1;
 FILE* stream;
 
 void ResetCharacter(int k,int l,int round){
@@ -84,7 +84,7 @@ void Round__(int i,int j){
 
 				//fprintf(stream,"The %d round till the %d sbox:%f\n",i,j,sumWeight(i));
 
-				if((sumWeight(i)+B[N-i])>B_n_bar){
+				if((sumWeight(i)+B[N-i])>=B_n_bar){
 					
 					if(j==8){
 						Round_(i+1);
@@ -114,7 +114,7 @@ void Round_N_(int j){
 		//fprintf(stream,"The N Round till the %d sbox:%f\n",j,sumWeight(N));
 		//fprintf(stream,"sumWeight(N)>B_n_bar:%d\tB_n_bar:%f\n",sumWeight(N)>B_n_bar,B_n_bar);
 
-		if(sumWeight(N)>B_n_bar){
+		if(sumWeight(N)>=B_n_bar){
 			
 			if(j==8){
 				printAndSetBound();
@@ -129,10 +129,11 @@ void Round_(int i){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
-	ExpansionUsingShift(&x_i_2_EConv,x_i_2);
+	ExpansionConv1(&x_i_2_EConv,x_i_2);
 	SboxOutput2word(&y_i_1, dy[i-1]+1);
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
+	
 	Expansion(dx[i]+1,x_i);
 
 	//fprintf(stream,"Differential of the %d round:\t",i);
@@ -149,8 +150,10 @@ void Round_(int i){
 }
 
 void Round_2_(int j){
+
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
 		ResetCharacter(a[2][j-1],a[2][j],2);
+		bool breakflag=0;
 		//退出条件
 		if(a[2][j]==8){
 			if(j!=1 && (dx[2][a[2][j-1]]&0x3)!=0){
@@ -158,7 +161,7 @@ void Round_2_(int j){
 					break;
 				}
 			}
-			if(j!=1||flag==1){
+			if(j!=1||activeflag==1){
 				dx[2][8]=0;
 				
 				if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
@@ -187,8 +190,11 @@ void Round_2_(int j){
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_(3);
+						}else{
+							breakflag=1;
 						}
 					}
+					if(breakflag==1) break;
 				}
 			}
 		}else if(a[2][j]==1){
@@ -201,8 +207,11 @@ void Round_2_(int j){
 					AddWeight(j,2);
 					if((p[2]+p[1]+B[N-2])>=B_n_bar){
 						Round_2_(j+1);
+					}else{
+						breakflag=1;
 					}
 				}
+				if(breakflag==1) break;
 			}
 		}else{
 			if(j!=1 && (dx[2][a[2][j-1]]&0x3)!=0){
@@ -227,9 +236,12 @@ void Round_2_(int j){
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[N-2])>=B_n_bar){
 							Round_2_(j+1);
+						}else{
+							breakflag=1;
 						}
 					}
 				}
+				if(breakflag==1) break;
 			}
 		}
 	}
@@ -280,6 +292,7 @@ void Round_2(){
 void Round_1_(int j){
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
 		ResetCharacter(a[1][j-1],a[1][j],1);
+		
 		//退出条件
 		//fprintTab(j,stream);
 		//fprintf(stream,"j:%d a[1][j]:%d\n",j,a[1][j]);
@@ -291,7 +304,8 @@ void Round_1_(int j){
 					break;
 				}
 			}
-			if(j!=1||flag==1){
+			if(j==1){
+				activeflag=0;
 				dx[1][8]=0;
 				
 				if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
@@ -306,6 +320,7 @@ void Round_1_(int j){
 					}
 				}
 			}
+			activeflag=1;
 			for(u8 x=1;x<64;x++){
 				dx[1][8]=x;
 				ResetCharacter(a[1][j-1],8,1);
