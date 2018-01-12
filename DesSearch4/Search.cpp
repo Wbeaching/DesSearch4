@@ -6,11 +6,16 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 8
+#define N 17
 
-double B[N]={0,0,-2.0,-4.0,-9.607684,-13.215366,-19.963827,-23.612152};
+double B[N]={0,
+	0,-2.0,-4.0,-9.607684,-13.215366,
+	-19.963827,-23.612152,-30.482869,-31.482868,-38.353586,
+	-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
+	-61.965737};
 
-static double B_n_bar=-31.0;
+int rounds=4;
+double B_n_bar=-12.0;
 
 int num_a[N+1];
 int a[N+1][9]={0};
@@ -49,7 +54,7 @@ double sumWeight(int m){
 
 void printAndSetBound(){
 	
-	for(int r=1;r<=N;r++){
+	for(int r=1;r<=rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
 			fprintf(stream,"%x ",dx[r][i]);
@@ -60,13 +65,14 @@ void printAndSetBound(){
 		}
 		fprintf(stream,"\tp%d:%f\n",r,p[r]);
 	}
-	B_n_bar=sumWeight(N);
+	B_n_bar=sumWeight(rounds);
 	fprintf(stream,"B_n_bar:%f\n==============\n",B_n_bar);
 }
 
 void Round_(int i);
 
 void Round__(int i,int j){
+	bool breakflag=0;
 	if(dx[i][j]==0){
 		dy[i][j]=0;
 		p_[i][j]=0;
@@ -84,7 +90,7 @@ void Round__(int i,int j){
 
 				//fprintf(stream,"The %d round till the %d sbox:%f\n",i,j,sumWeight(i));
 
-				if((sumWeight(i)+B[N-i])>=B_n_bar){
+				if((sumWeight(i)+B[rounds-i])>=B_n_bar){
 					
 					if(j==8){
 						Round_(i+1);
@@ -92,29 +98,33 @@ void Round__(int i,int j){
 						Round__(i,j+1);
 					}
 				}
+				else{
+					breakflag=1;
+				}
 			}
+			if(breakflag==1) break;
 		}
 	}
 }
 
 void Round_N_(int j){
-	if(dx[N][j]==0){
-		dy[N][j]=0;
-		p_[N][j]=0;
+	if(dx[rounds][j]==0){
+		dy[rounds][j]=0;
+		p_[rounds][j]=0;
 		if(j==8){
 			printAndSetBound();
 		}else{
 			Round_N_(j+1);
 		}
 	}else{
-		p_[N][j]=DDT_MaxOutput[j-1][dx[N][j]];
-		AddWeight(j,N);
-		dy[N][j]=DDT_MaxOutput_Index[j-1][dx[N][j]];
+		p_[rounds][j]=DDT_MaxOutput[j-1][dx[rounds][j]];
+		AddWeight(j,rounds);
+		dy[rounds][j]=DDT_MaxOutput_Index[j-1][dx[rounds][j]];
 
 		//fprintf(stream,"The N Round till the %d sbox:%f\n",j,sumWeight(N));
 		//fprintf(stream,"sumWeight(N)>B_n_bar:%d\tB_n_bar:%f\n",sumWeight(N)>B_n_bar,B_n_bar);
 
-		if(sumWeight(N)>=B_n_bar){
+		if(sumWeight(rounds)>=B_n_bar){
 			
 			if(j==8){
 				printAndSetBound();
@@ -140,8 +150,8 @@ void Round_(int i){
 	//fprintnum(dx[i]+1,stream);
 	//fprint8t8(dx[i]+1,stream);
 
-	if(i==N){
-		p[N]=0;
+	if(i==rounds){
+		p[rounds]=0;
 		Round_N_(1);
 	}else{
 		p[i]=0;
@@ -168,7 +178,7 @@ void Round_2_(int j){
 					dy[2][8]=0;
 					p_[2][j]=0;
 					AddWeight(j,2);
-					if((p[2]+p[1]+B[N-2])>=B_n_bar){
+					if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 						Round_(3);
 					}
 				}
@@ -188,7 +198,7 @@ void Round_2_(int j){
 
 						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j,2);
-						if((p[2]+p[1]+B[N-2])>=B_n_bar){
+						if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 							Round_(3);
 						}else{
 							breakflag=1;
@@ -205,7 +215,7 @@ void Round_2_(int j){
 					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
 					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
 					AddWeight(j,2);
-					if((p[2]+p[1]+B[N-2])>=B_n_bar){
+					if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 						Round_2_(j+1);
 					}else{
 						breakflag=1;
@@ -234,7 +244,7 @@ void Round_2_(int j){
 
 						p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
 						AddWeight(j,2);
-						if((p[2]+p[1]+B[N-2])>=B_n_bar){
+						if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 							Round_2_(j+1);
 						}else{
 							breakflag=1;
@@ -314,7 +324,7 @@ void Round_1_(int j){
 					AddWeight(j,1);
 					//fprintTab(j,stream);
 					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[N-1])>=B_n_bar){
+					if((p[1]+B[rounds-1])>=B_n_bar){
 						//fprintf(stream,"pass\n");
 						Round_2();
 					}
@@ -330,7 +340,7 @@ void Round_1_(int j){
 					AddWeight(j,1);
 					//fprintTab(j,stream);
 					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[N-1])>=B_n_bar){
+					if((p[1]+B[rounds-1])>=B_n_bar){
 						//fprintTab(j,stream);
 						//fprintf(stream,"pass\n");
 						Round_2();
@@ -346,7 +356,7 @@ void Round_1_(int j){
 				AddWeight(j,1);
 				//fprintTab(j,stream);
 				//fprintf(stream,"p[1]:%f\n",p[1]);
-				if((p[1]+B[N-1])>=B_n_bar){
+				if((p[1]+B[rounds-1])>=B_n_bar){
 					//fprintTab(j,stream);
 					//fprintf(stream,"pass\n");
 					Round_1_(j+1);
@@ -369,7 +379,7 @@ void Round_1_(int j){
 					AddWeight(j,1);
 					//fprintTab(j,stream);
 					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[N-1])>=B_n_bar){
+					if((p[1]+B[rounds-1])>=B_n_bar){
 						//fprintTab(j,stream);
 						//fprintf(stream,"pass\n");
 						Round_1_(j+1);

@@ -26,7 +26,7 @@ int main(){
 		//print32(z);
 	}
 	end = clock();
-	printf("原始time=%f\n",(double)(end-start)/CLK_TCK);
+	//printf("原始time=%f\n",(double)(end-start)/CLK_TCK);
 	
 	start = clock();
 	GenETableLookUp();
@@ -102,7 +102,7 @@ int main(){
 	Expansion(dx+1,x_i);
 	print32(x_i);
 	print8t8(dx+1);*/
-	start = clock();
+	
 	/*u32 dy;
 	u32 dx1=genRandom32();
 	u64 dx;
@@ -112,7 +112,7 @@ int main(){
 	ExpansionConvTL(&dy,dx);
 	print32(dy);*/
 	//printMaxOutput();
-	Round_1();
+	
 	/*u32 x1=0x19600000,y1=0x0,dy;
 	u8 dx1[8],dy1[8];
 	Expansion(dx1,x1);
@@ -123,8 +123,17 @@ int main(){
 	for(int i=0;i<8;i++){
 		printf("%f\t",DDT[i][dx1[i]][dy1[i]]);
 	}*/
-	end = clock();
-	printf("搜索time=%f\n",(double)(end-start)/CLK_TCK);
+	double bound;
+	rounds=5;
+	bound=-13.0;
+	for(int i=0;i<10;i++){
+		B_n_bar=bound;
+		start = clock();
+		Round_1();
+		end = clock();
+		printf("%d轮搜索，概率下界为%f，搜索时间=%f\n",rounds,bound,(double)(end-start)/CLK_TCK);
+		bound-=1.0;
+	}
 	system("pause");
 	return 0;
 }
