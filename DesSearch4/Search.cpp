@@ -14,13 +14,13 @@ double B[N]={0,
 	-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
 	-61.965737};
 
-int rounds=4;
-double B_n_bar=-12.0;
+int rounds;
+double B_n_bar;
 
 int num_a[N+1];
 int a[N+1][9]={0};
 double p[N+1];
-double p_[N+1][9];
+double p_[N+1][9]={0};
 
 u8 dx[N+1][9]={0};
 u8 dy[N+1][9]={0};
@@ -28,12 +28,19 @@ u8 dy[N+1][9]={0};
 bool activeflag=1;
 FILE* stream;
 
-void ResetCharacter(int k,int l,int round){
+/*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
 		if(i!=l){
 			dx[round][i]=0;
 			dy[round][i]=0;
 		}
+	}
+}*/
+
+void ResetCharacter(int k,int l,int round){
+	for(int i=k+1;i<l;i++){
+		dx[round][i]=0;
+		dy[round][i]=0;
 	}
 }
 
@@ -44,6 +51,8 @@ void AddWeight(int j,int round){
 	}
 }
 
+
+
 double sumWeight(int m){
 	double temp=0;
 	for(int i=1;i<=m;i++){
@@ -53,7 +62,19 @@ double sumWeight(int m){
 }
 
 void printAndSetBound(){
-	
+	/*for(int r=1;r<=2;r++){
+		fprintf(stream,"dx%d:",r);
+		for(int i=1;i<=num_a[r];i++){
+			fprintf(stream,"#%d:",a[r][i]);
+			fprintf(stream,"%x ",dx[r][a[r][i]]);
+		}
+		fprintf(stream,"\ndy%d:",r);
+		for(int i=1;i<=num_a[r];i++){
+			fprintf(stream,"#%d:",a[r][i]);
+			fprintf(stream,"%x ",dy[r][a[r][i]]);
+		}
+		fprintf(stream,"\tp%d:%f\n",r,p[r]);
+	}*/
 	for(int r=1;r<=rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
@@ -83,9 +104,10 @@ void Round__(int i,int j){
 		}
 	}else{
 		for(int frequency=8;frequency>0;frequency--){
+			p_[i][j]=DDT_int2DDT[frequency];
 			for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
 				dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
-				p_[i][j]=DDT[j-1][dx[i][j]][dy[i][j]];
+				//p_[i][j]=DDT[j-1][dx[i][j]][dy[i][j]];
 				AddWeight(j,i);
 
 				//fprintf(stream,"The %d round till the %d sbox:%f\n",i,j,sumWeight(i));
@@ -139,7 +161,7 @@ void Round_(int i){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
-	ExpansionConv1(&x_i_2_EConv,x_i_2);
+	ExpansionConvTL(&x_i_2_EConv,x_i_2);
 	SboxOutput2word(&y_i_1, dy[i-1]+1);
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
@@ -162,6 +184,7 @@ void Round_(int i){
 void Round_2_(int j){
 
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
+		num_a[2]=j;
 		ResetCharacter(a[2][j-1],a[2][j],2);
 		bool breakflag=0;
 		//退出条件
@@ -185,10 +208,10 @@ void Round_2_(int j){
 			}
 			//int prefix=dx[2][7]&0x3,suffix=dx[2][1]>>4;
 			for(int frequency=8;frequency>0;frequency--){
-				
+				p_[2][j]=DDT_int2DDT[frequency];
 				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
-					ResetCharacter(a[2][j-1],8,2);
+					//ResetCharacter(a[2][j-1],8,2);
 					if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
 						dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
 				/*for(int index=0;index<DDT_SearchInOrderWithBifixLength[prefix][suffix][7][frequency];index++){
@@ -196,7 +219,7 @@ void Round_2_(int j){
 					dy[2][8]=DDT_SearchInOrderYWithBifix[prefix][suffix][7][frequency][index];
 					ResetCharacter(a[2][j-1],8,2);*/
 
-						p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
+						//p_[2][j]=DDT[7][dx[2][8]][dy[2][8]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 							Round_(3);
@@ -209,11 +232,12 @@ void Round_2_(int j){
 			}
 		}else if(a[2][j]==1){
 			for(int frequency=8;frequency>0;frequency--){
+				p_[2][j]=DDT_int2DDT[frequency];
 				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][1]=DDT_SearchInOrderX[0][frequency][index];
-					ResetCharacter(0,1,2);
+					//ResetCharacter(0,1,2);
 					dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
-					p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
+					//p_[2][j]=DDT[0][dx[2][1]][dy[2][1]];
 					AddWeight(j,2);
 					if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 						Round_2_(j+1);
@@ -231,10 +255,10 @@ void Round_2_(int j){
 			}
 			//int prefix=dx[2][a[2][j]-1]&0x3;
 			for(int frequency=8;frequency>0;frequency--){
-
+				p_[2][j]=DDT_int2DDT[frequency];
 				for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 					dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
-					ResetCharacter(a[2][j-1],a[2][j],2);
+					//ResetCharacter(a[2][j-1],a[2][j],2);
 					if( (dx[2][a[2][j]]&0x30) == ((dx[2][a[2][j]-1]&0x3)<<4) ){
 						dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
 				/*for(int index=0;index<DDT_SearchInOrderWithPrefixLength[prefix][a[2][j]-1][frequency];index++){
@@ -242,7 +266,7 @@ void Round_2_(int j){
 					dy[2][a[2][j]]=DDT_SearchInOrderYWithPrefix[prefix][a[2][j]-1][frequency][index];
 					ResetCharacter(a[2][j-1],a[2][j],2);*/
 
-						p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
+						//p_[2][j]=DDT[a[2][j]-1][dx[2][a[2][j]]][dy[2][a[2][j]]];
 						AddWeight(j,2);
 						if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
 							Round_2_(j+1);
@@ -297,10 +321,9 @@ void Round_2(){
 	fclose(stream);
 }*/
 
-
-
 void Round_1_(int j){
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
+		num_a[1]=j;
 		ResetCharacter(a[1][j-1],a[1][j],1);
 		
 		//退出条件
@@ -333,7 +356,7 @@ void Round_1_(int j){
 			activeflag=1;
 			for(u8 x=1;x<64;x++){
 				dx[1][8]=x;
-				ResetCharacter(a[1][j-1],8,1);
+				//ResetCharacter(a[1][j-1],8,1);
 				if( (dx[1][8]&0x30)==((dx[1][7]&0x3)<<4) && (dx[1][8]&0x3)==((dx[1][1]&0x30)>>4) ){
 					dy[1][8]=DDT_MaxOutput_Index[7][dx[1][8]];
 					p_[1][j]=DDT_MaxOutput[7][dx[1][8]];
@@ -350,7 +373,7 @@ void Round_1_(int j){
 		}else if(a[1][j]==1){
 			for(u8 x=1;x<64;x++){
 				dx[1][1]=x;
-				ResetCharacter(0,1,1);
+				//ResetCharacter(0,1,1);
 				dy[1][1]=DDT_MaxOutput_Index[0][dx[1][1]];
 				p_[1][j]=DDT_MaxOutput[0][dx[1][1]];
 				AddWeight(j,1);
@@ -372,7 +395,7 @@ void Round_1_(int j){
 			}
 			for(u8 x=1;x<64;x++){
 				dx[1][a[1][j]]=x;
-				ResetCharacter(a[1][j-1],a[1][j],1);
+				//ResetCharacter(a[1][j-1],a[1][j],1);
 				if( (dx[1][a[1][j]]&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
 					dy[1][a[1][j]]=DDT_MaxOutput_Index[a[1][j]-1][dx[1][a[1][j]]];
 					p_[1][j]=DDT_MaxOutput[a[1][j]-1][dx[1][a[1][j]]];

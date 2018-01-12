@@ -38,6 +38,7 @@ int main(){
 
 	start = clock();
 	GenDiffDistributionTable();
+	GenDDT_int2DDT();
 	GenDiffDistributionTableMax();
 	GenSearchInOrder();
 	GenSearchInOrderWithFixedX();
@@ -125,13 +126,13 @@ int main(){
 	}*/
 	double bound;
 	rounds=5;
-	bound=-13.0;
-	for(int i=0;i<10;i++){
+	bound=-14;
+	for(int i=0;i<2;i++){
 		B_n_bar=bound;
 		start = clock();
 		Round_1();
 		end = clock();
-		printf("%d轮搜索，概率下界为%f，搜索时间=%f\n",rounds,bound,(double)(end-start)/CLK_TCK);
+		printf("%d轮搜索，概率下界为%f，结果为%f，搜索时间=%f\n",rounds,bound,B_n_bar,(double)(end-start)/CLK_TCK);
 		bound-=1.0;
 	}
 	system("pause");

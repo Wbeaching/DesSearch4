@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 
+double DDT_int2DDT[9]={0};
 unsigned int DDT_int[8][64][16]={0};
 double DDT[8][64][16]={0};
 u8 DDT_SearchInOrderX[8][9][512]={0};
@@ -23,6 +24,12 @@ u8 DDT_MaxOutput_Index[8][64];
 
 u8 DDT_SearchInOrderWithFixedX[8][9][64][16]={0};
 int DDT_SearchInOrderWithFixedXLength[8][9][64]={0};
+
+void GenDDT_int2DDT(){
+	for(int i=1;i<=8;i++){
+		DDT_int2DDT[i]=log((double)i*2)/log(2.0)-6.0;
+	}
+}
 
 void GenDiffDistributionTable(){
 	double frequency;
