@@ -6,13 +6,18 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#define N 17
 
 double B[N]={0,
 	0,-2.0,-4.0,-9.607684,-13.215366,
 	-19.963827,-23.612152,-30.482869,-31.482868,-38.353586,
 	-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
 	-61.965737};
+
+double TestB[N]={0,
+	0,-2.0,-4.0,-9.0,-13.0,
+	-19.0,-23.0,-30.0,-31.0,-38.0,
+	-39.0,-46.0,-47.0,-54.0,-55.0,
+	-61.0};
 
 int rounds;
 double B_n_bar;
@@ -339,20 +344,21 @@ void Round_1_(int j){
 			}
 			if(j==1){
 				activeflag=0;
-				dx[1][8]=0;
+			}
+			dx[1][8]=0;
 				
-				if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
-					dy[1][8]=0;
-					p_[1][j]=0;
-					AddWeight(j,1);
-					//fprintTab(j,stream);
-					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[rounds-1])>=B_n_bar){
-						//fprintf(stream,"pass\n");
-						Round_2();
-					}
+			if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
+				dy[1][8]=0;
+				p_[1][j]=0;
+				AddWeight(j,1);
+				//fprintTab(j,stream);
+				//fprintf(stream,"p[1]:%f\n",p[1]);
+				if((p[1]+B[rounds-1])>=B_n_bar){
+					//fprintf(stream,"pass\n");
+					Round_2();
 				}
 			}
+			
 			activeflag=1;
 			for(u8 x=1;x<64;x++){
 				dx[1][8]=x;

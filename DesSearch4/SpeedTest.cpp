@@ -125,15 +125,18 @@ int main(){
 		printf("%f\t",DDT[i][dx1[i]][dy1[i]]);
 	}*/
 	double bound;
-	rounds=5;
-	bound=-14;
-	for(int i=0;i<2;i++){
-		B_n_bar=bound;
-		start = clock();
-		Round_1();
-		end = clock();
-		printf("%d轮搜索，概率下界为%f，结果为%f，搜索时间=%f\n",rounds,bound,B_n_bar,(double)(end-start)/CLK_TCK);
-		bound-=1.0;
+	//rounds=5;
+	//bound=TestB[rounds];
+	for(rounds=4;rounds<17;rounds++){
+		bound=TestB[rounds];
+		for(int i=0;i<5;i++){
+			B_n_bar=bound;
+			start = clock();
+			Round_1();
+			end = clock();
+			printf("%d轮搜索，概率下界为%f，结果为%f，搜索时间=%f\n",rounds,bound,B_n_bar,(double)(end-start)/CLK_TCK);
+			bound-=1.0;
+		}
 	}
 	system("pause");
 	return 0;
