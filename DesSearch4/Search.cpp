@@ -13,7 +13,7 @@
 	-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
 	-61.965737};*/
 double B[N]={0,
-	0,-2.0,-4.0,-9.607682,-13.215364,
+	0,-2.0+0.000001,-4.0+0.000001,-9.607682,-13.215364,
 	-19.963825,-23.612150,-30.482867,-31.482867,-38.353584,
 	-39.353584,-46.224301,-47.224301,-54.095018,-55.095018,
 	-61.965735};
@@ -26,8 +26,7 @@ double TestB[N]={0,
 
 int rounds;
 double B_n_bar;
-
-int num_a[N+1];
+int num_a[N+1]={0};
 int a[N+1][9]={0};
 double p[N+1];
 double p_[N+1][9]={0};
@@ -38,6 +37,9 @@ u8 dy[N+1][9]={0};
 bool activeflag=1;
 FILE* stream;
 
+int freq1[8]={0};
+int count1[8]={0};
+int freqN[8]={0};
 /*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
 		if(i!=l){
@@ -72,20 +74,13 @@ double sumWeight(int m){
 }
 
 void printAndSetBound(){
-	/*for(int r=1;r<=2;r++){
-		fprintf(stream,"dx%d:",r);
-		for(int i=1;i<=num_a[r];i++){
-			fprintf(stream,"#%d:",a[r][i]);
-			fprintf(stream,"%x ",dx[r][a[r][i]]);
-		}
-		fprintf(stream,"\ndy%d:",r);
-		for(int i=1;i<=num_a[r];i++){
-			fprintf(stream,"#%d:",a[r][i]);
-			fprintf(stream,"%x ",dy[r][a[r][i]]);
-		}
-		fprintf(stream,"\tp%d:%f\n",r,p[r]);
-	}*/
-	for(int r=1;r<=rounds;r++){
+	//B_n_bar=sumWeight(rounds);
+	fprintf(stream,"dx1:");
+	for(int i=1;i<=8;i++){
+		fprintf(stream,"%x ",dx[1][i]);
+	}
+	fprintf(stream,"\tp1:%f\n",p[1]);
+	for(int r=2;r<=rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
 			fprintf(stream,"%x ",dx[r][i]);
@@ -96,7 +91,7 @@ void printAndSetBound(){
 		}
 		fprintf(stream,"\tp%d:%f\n",r,p[r]);
 	}
-	B_n_bar=sumWeight(rounds);
+			
 	fprintf(stream,"B_n_bar:%f\n==============\n",B_n_bar);
 }
 
@@ -194,7 +189,6 @@ void Round_(int i){
 void Round_2_(int j){
 
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
-		num_a[2]=j;
 		ResetCharacter(a[2][j-1],a[2][j],2);
 		bool breakflag=0;
 		//退出条件
@@ -295,132 +289,135 @@ void Round_2(){
 	Round_2_(1);
 }
 
-/*void Round_2(){
-	for(int r=1;r<=1;r++){
-		fprintf(stream,"dx%d:",r);
-		for(int i=1;i<=8;i++){
-			fprintf(stream,"%x ",dx[r][i]);
-		}
-		fprintf(stream,"\ndy%d:",r);
-		for(int i=1;i<=8;i++){
-			fprintf(stream,"%x ",dy[r][i]);
-		}
-		fprintf(stream,"\tp%d:%f\n",r,p[r]);
-	}
-}*/
-
-/*void Round_1(){
-	
-	stream = fopen( "fprintf.txt", "w" );
-	
-	
-	for(u32 x=1;x<0xffffffff;x++){
-		ExpansionTL(dx[1]+1,x);
-		p[1]=0;
-		for(int Si=0;Si<8;Si++){
-			p[1]+=DDT_MaxOutput[Si][dx[1][Si+1]];
-			dy[1][Si+1]=DDT_MaxOutput_Index[Si][dx[1][Si+1]];
-		}
-		if((p[1]+B[N-1])>=B_n_bar){
-			Round_2();
-			printf("##:%x\n",x);
-			print8t8(dx[1]+1);
-		}
-		fflush(stream);
-	}
-	fclose(stream);
-}*/
-
+//------------------------------
+//第一轮搜索
+//------------------------------
 void Round_1_(int j){
+	num_a[1]=j;
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
-		num_a[1]=j;
 		ResetCharacter(a[1][j-1],a[1][j],1);
-		
-		//退出条件
-		//fprintTab(j,stream);
-		//fprintf(stream,"j:%d a[1][j]:%d\n",j,a[1][j]);
+//******************************
+//将第a[1][j-1]个S盒至第a[1][j]个S盒之间的S盒输入输出全部置为0。
+//******************************
+
 		if(a[1][j]==8){
 			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
 				if(a[1][j-1]!=7){
-					//fprintTab(j,stream);
-					//fprintf(stream,"break\n");
 					break;
 				}
 			}
+//******************************
+//a[1][j-1]后两个比特不为0，那么a[1][j]只能取a[1][j-1]+1；但若j=1，不存在这个问题。
+//a[1][j]==8时，满足上述条件，a[1][j-1]!=7。
+//******************************
+
 			if(j==1){
 				activeflag=0;
 			}
 			dx[1][8]=0;
-				
+//******************************
+//j==1且a[1][j]==8且dx[1][8]==0时，第一轮差分为0，activeflag置为0，这时第二轮必须活跃
+//******************************
+
 			if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
 				dy[1][8]=0;
 				p_[1][j]=0;
 				AddWeight(j,1);
-				//fprintTab(j,stream);
-				//fprintf(stream,"p[1]:%f\n",p[1]);
 				if((p[1]+B[rounds-1])>=B_n_bar){
-					//fprintf(stream,"pass\n");
 					Round_2();
 				}
 			}
+//******************************
+//a[1][j]==8且dx[1][8]==0时，dx[1][7]的后两个比特和dx[1][1]的前两个比特必须为0。
+//这里j不必为1，前面j==1用于判断第一轮差分是否为0。
+//累加概率，剪枝，因a[1][j]==8，通过剪枝则进入下一轮。
+//******************************
 			
 			activeflag=1;
-			for(u8 x=1;x<64;x++){
-				dx[1][8]=x;
-				//ResetCharacter(a[1][j-1],8,1);
-				if( (dx[1][8]&0x30)==((dx[1][7]&0x3)<<4) && (dx[1][8]&0x3)==((dx[1][1]&0x30)>>4) ){
-					dy[1][8]=DDT_MaxOutput_Index[7][dx[1][8]];
-					p_[1][j]=DDT_MaxOutput[7][dx[1][8]];
-					AddWeight(j,1);
-					//fprintTab(j,stream);
-					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[rounds-1])>=B_n_bar){
-						//fprintTab(j,stream);
-						//fprintf(stream,"pass\n");
-						Round_2();
+			for(u8 dx_1_8=1;dx_1_8<64;dx_1_8++){
+				dx[1][8]=dx_1_8;
+				if( (dx_1_8&0x30)==((dx[1][7]&0x3)<<4) && (dx_1_8&0x3)==((dx[1][1]&0x30)>>4) ){
+					for(int freq=8,count;freq>0;freq--){
+						count=DDT_SearchInOrderWithFixedXLength[7][freq][dx_1_8];
+						if(count!=0){
+							freq1[7]=freq;
+							count1[7]=count;
+							p_[1][j]=DDT_int2DDT[freq];
+							AddWeight(j,1);
+							if((p[1]+B[rounds-1])>=B_n_bar){
+								Round_2();
+							}
+						}
+						break;
 					}
 				}
 			}
+//******************************
+//a[1][j]==8且dx[1][8]!=0时，遍历dx[1][8]的可能，其实这里dx[1][8]的自由度只有两个比特。
+//固定了输入差分，输出差分取概率最大的所有值。
+//累加概率，剪枝，因a[1][j]==8，通过剪枝则进入下一轮。
+//******************************
+
+
 		}else if(a[1][j]==1){
-			for(u8 x=1;x<64;x++){
-				dx[1][1]=x;
-				//ResetCharacter(0,1,1);
-				dy[1][1]=DDT_MaxOutput_Index[0][dx[1][1]];
-				p_[1][j]=DDT_MaxOutput[0][dx[1][1]];
-				AddWeight(j,1);
-				//fprintTab(j,stream);
-				//fprintf(stream,"p[1]:%f\n",p[1]);
-				if((p[1]+B[rounds-1])>=B_n_bar){
-					//fprintTab(j,stream);
-					//fprintf(stream,"pass\n");
-					Round_1_(j+1);
+			for(u8 dx_1_1=1;dx_1_1<64;dx_1_1++){
+				dx[1][1]=dx_1_1;
+				for(int freq=8,count;freq>0;freq--){
+					count=DDT_SearchInOrderWithFixedXLength[0][freq][dx_1_1];
+					if(count!=0){
+						freq1[0]=freq;
+						count1[0]=count;
+						p_[1][j]=DDT_int2DDT[freq];
+						AddWeight(j,1);
+						if((p[1]+B[rounds-1])>=B_n_bar){
+							Round_1_(j+1);
+						}
+						break;
+					}
 				}
 			}
+//******************************
+//a[1][j]==1时，此时也有j=1，遍历dx[1][1]的非零可能，这里dx[1][1]的自由度有六个比特。
+//固定了输入差分，输出差分取概率最大的所有值。
+//累加概率，剪枝，通过剪枝则进入下一个S盒。
+//******************************
+
 		}else{
 			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
 				if(a[1][j]!=(a[1][j-1]+1)){
-					//fprintTab(j,stream);
-					//fprintf(stream,"break\n");
 					break;
 				}
 			}
-			for(u8 x=1;x<64;x++){
-				dx[1][a[1][j]]=x;
-				//ResetCharacter(a[1][j-1],a[1][j],1);
+//******************************
+//a[1][j-1]后两个比特不为0，那么a[1][j]只能取a[1][j-1]+1；但若j=1，不存在这个问题。
+//******************************
+
+			for(u8 dx_1_a1j=1;dx_1_a1j<64;dx_1_a1j++){
+				dx[1][a[1][j]]=dx_1_a1j;
 				if( (dx[1][a[1][j]]&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
-					dy[1][a[1][j]]=DDT_MaxOutput_Index[a[1][j]-1][dx[1][a[1][j]]];
-					p_[1][j]=DDT_MaxOutput[a[1][j]-1][dx[1][a[1][j]]];
-					AddWeight(j,1);
-					//fprintTab(j,stream);
-					//fprintf(stream,"p[1]:%f\n",p[1]);
-					if((p[1]+B[rounds-1])>=B_n_bar){
-						//fprintTab(j,stream);
-						//fprintf(stream,"pass\n");
-						Round_1_(j+1);
+					for(int freq=8,count;freq>0;freq--){
+						count=DDT_SearchInOrderWithFixedXLength[a[1][j]-1][freq][dx_1_a1j];
+						if(count!=0){
+							freq1[a[1][j]-1]=freq;
+							count1[a[1][j]-1]=count;
+							p_[1][j]=DDT_int2DDT[freq];
+							AddWeight(j,1);
+							if((p[1]+B[rounds-1])>=B_n_bar){
+								Round_1_(j+1);
+							}
+						}
+						break;
 					}
+
 				}
 			}
 		}
+//******************************
+//a[1][j]在2至7之间时，遍历dx[1][1]的非零可能，这里dx[1][a[1][j]]的自由度有四个比特。
+//固定了输入差分，输出差分取概率最大的所有值。
+//累加概率，剪枝，通过剪枝则进入下一个S盒。
+//******************************
+
 	}
 }
 
