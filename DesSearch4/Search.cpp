@@ -121,26 +121,30 @@ void printAndSetBound(){
 
 void Round_(int i);
 
-void Round__(int i,int j){
+void Round__(int i,int j,double pr,double pr_round){
 	if(dx[i][j]==0){
 		dy[i][j]=0;
 		p_[i][j]=0;
 		if(j==8){
+			p[i]=pr_round;
 			Round_(i+1);
 		}else{
-			Round__(i,j+1);
+			Round__(i,j+1,pr,pr_round);
 		}
 	}else{
+		double prob;
 		for(int frequency=8;frequency>0;frequency--){
 			p_[i][j]=DDT_int2DDT[frequency];
-			AddWeight(j,i);
-			if((sumWeight(i)+B[rounds-i])>=B_n_bar){
+			prob=p_[i][j]+pr_round;
+			//AddWeight(j,i);
+			if((pr+prob+B[rounds-i])>=B_n_bar){
 				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
 					dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
 					if(j==8){
+						p[i]=prob;
 						Round_(i+1);
 					}else{
-						Round__(i,j+1);
+						Round__(i,j+1,pr,prob);
 					}
 				}
 			}else{
@@ -186,8 +190,7 @@ void Round_(int i){
 		p[rounds]=0;
 		Round_N_(1);
 	}else{
-		p[i]=0;
-		Round__(i,1);
+		Round__(i,1,sumWeight(i-1),0);
 	}
 }
 
