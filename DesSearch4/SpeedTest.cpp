@@ -127,8 +127,8 @@ int main(){
 	double bound;
 	//rounds=5;
 	//bound=TestB[rounds];
-	for(rounds=12;rounds<13;rounds++){
-		bound=TestB[rounds]-3.0;
+	for(rounds=5;rounds<6;rounds++){
+		bound=TestB[rounds]-1.0;
 		for(int i=0;i<1;i++){
 			B_n_bar=bound;
 			start = clock();
