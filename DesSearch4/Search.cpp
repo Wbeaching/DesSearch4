@@ -124,7 +124,7 @@ void Round_(int i);
 void Round__(int i,int j,double pr,double pr_round){
 	if(dx[i][j]==0){
 		dy[i][j]=0;
-		p_[i][j]=0;
+		//p_[i][j]=0;
 		if(j==8){
 			p[i]=pr_round;
 			Round_(i+1);
@@ -197,8 +197,8 @@ void Round_(int i){
 //------------------------------
 //第二轮搜索子函数
 //------------------------------
-void Round_2_(int j){
-
+void Round_2_(int j,double pr_round){
+	double prob;
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
 		ResetCharacter(a[2][j-1],a[2][j],2);
 //******************************
@@ -234,9 +234,9 @@ void Round_2_(int j){
 
 				if( 0==(dx[2][7]&0x3) && 0==(dx[2][1]&0x30) ){
 					dy[2][8]=0;
-					p_[2][j]=0;
-					AddWeight(j,2);
-					if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
+					//p_[2][j]=0;
+					if((pr_round+p[1]+B[rounds-2])>=B_n_bar){
+						p[2]=pr_round;
 						Round_(3);
 					}
 				}
@@ -248,12 +248,13 @@ void Round_2_(int j){
 
 			for(int frequency=8;frequency>0;frequency--){
 				p_[2][j]=DDT_int2DDT[frequency];
-				AddWeight(j,2);
-				if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
+				prob=pr_round+p_[2][j];
+				if((prob+p[1]+B[rounds-2])>=B_n_bar){
 					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 						dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
 						if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
 							dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+							p[2]=prob;
 							Round_(3);
 						}
 					}
@@ -273,12 +274,12 @@ void Round_2_(int j){
 		}else if(a[2][j]==1){
 			for(int frequency=8;frequency>0;frequency--){
 				p_[2][j]=DDT_int2DDT[frequency];
-				AddWeight(j,2);
-				if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
+				prob=pr_round+p_[2][j];
+				if((prob+p[1]+B[rounds-2])>=B_n_bar){
 					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 						dx[2][1]=DDT_SearchInOrderX[0][frequency][index];
 						dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
-						Round_2_(j+1);
+						Round_2_(j+1,prob);
 					}
 				}else{
 					break;
@@ -306,13 +307,13 @@ void Round_2_(int j){
 
 			for(int frequency=8;frequency>0;frequency--){
 				p_[2][j]=DDT_int2DDT[frequency];
-				AddWeight(j,2);
-				if((p[2]+p[1]+B[rounds-2])>=B_n_bar){
+				prob=pr_round+p_[2][j];
+				if((prob+p[1]+B[rounds-2])>=B_n_bar){
 					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
 						dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
 						if( (dx[2][a[2][j]]&0x30) == ((dx[2][a[2][j]-1]&0x3)<<4) ){
 							dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
-							Round_2_(j+1);
+							Round_2_(j+1,prob);
 						}
 					}					
 				}else{
@@ -332,7 +333,7 @@ void Round_2_(int j){
 //第二轮搜索
 //------------------------------
 void Round_2(){
-	Round_2_(1);
+	Round_2_(1,0);
 }
 
 //------------------------------
