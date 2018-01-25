@@ -127,7 +127,7 @@ int main(){
 	double bound;
 	//rounds=5;
 	//bound=TestB[rounds];
-	for(rounds=4;rounds<17;rounds++){
+	for(rounds=4;rounds<5;rounds++){
 		bound=TestB[rounds]-1.0;
 		for(int i=0;i<1;i++){
 			B_n_bar=bound;

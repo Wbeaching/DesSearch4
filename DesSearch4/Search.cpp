@@ -37,7 +37,7 @@ u8 dy[N+1][9]={0};
 bool activeflag=1;
 FILE* stream;
 
-double pr_cut[N+1][9];
+double pr_cut[N+1][9]={0};
 
 int freq1[8]={0};
 int count1[8]={0};
@@ -58,28 +58,28 @@ inline void ResetCharacter(int k,int l,int round){
 	}
 }
 
-inline void AddWeight(int j,int round){
+/*inline void AddWeight(int j,int round){
 	p[round]=0;
 	for(int k=1;k<=j;k++){
 		p[round]+=p_[round][k];
 	}
-}
+}*/
 
 
 
-inline double sumWeight(int m){
+/*inline double sumWeight(int m){
 	double temp=0;
 	for(int i=1;i<=m;i++){
 		temp+=p[i];
 	}
 	return temp;
-}
+}*/
 
 //------------------------------
 //输出新找到的最佳特征，并设置概率下界
 //------------------------------
-void printAndSetBound(){
-	B_n_bar=sumWeight(rounds);
+void printAndSetBound(double pr_whole){
+	B_n_bar=pr_whole;//sumWeight(rounds);
 //******************************
 //找到新的最佳概率，则将概率下界设为它
 //******************************
@@ -91,15 +91,24 @@ void printAndSetBound(){
 	for(int i=1;i<=8;i++){
 		fprintf(stream,"%x ",dx[1][i]);
 	}
+	fprintf(stream,"\ndy1:");
+	for(int i=1;i<=8;i++){
+		if(dx[1][i]==0){
+			fprintf(stream,"0 ");
+		}else{
+			for(int j=0;j<DDT_MaxOutputsLength[i-1][dx[1][i]];j++)
+			{
+				fprintf(stream,"%x-",DDT_MaxOutputs[i-1][dx[1][i]][j]);
+			}
+			fprintf(stream," ");
+		}
+	}
 	fprintf(stream,"\tp1:%f\n",p[1]);
-//******************************
-//
-//******************************
 
 //------------------------------
 //打印第2~N-1轮特征
 //------------------------------
-	for(int r=2;r<=rounds;r++){
+	for(int r=2;r<rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
 			fprintf(stream,"%x ",dx[r][i]);
@@ -114,36 +123,52 @@ void printAndSetBound(){
 //------------------------------
 //打印第N轮特征
 //------------------------------
-
+	fprintf(stream,"dx%d:",rounds);
+	for(int i=1;i<=8;i++){
+		fprintf(stream,"%x ",dx[rounds][i]);
+	}
+	fprintf(stream,"\ndy1:");
+	for(int i=1;i<=8;i++){
+		if(dx[rounds][i]==0){
+			fprintf(stream,"0 ");
+		}else{
+			for(int j=0;j<DDT_MaxOutputsLength[i-1][dx[rounds][i]];j++)
+			{
+				fprintf(stream,"%x-",DDT_MaxOutputs[i-1][dx[rounds][i]][j]);
+			}
+			fprintf(stream," ");
+		}
+	}
+	fprintf(stream,"\tp%d:%f\n",rounds,p[rounds]);
 //------------------------------
 //打印目前的最佳概率
 //------------------------------
 	fprintf(stream,"B_n_bar:%f\n==============\n",B_n_bar);
 }
 
-void Round_(int i);
+void Round_(int i,double pr_former);
 
 void Round__(int i,int j,double pr,double pr_round){
 	if(dx[i][j]==0){
 		dy[i][j]=0;
 		if(j==8){
 			p[i]=pr_round;
-			Round_(i+1);
+			Round_(i+1,p[i]+pr);
 		}else{
 			Round__(i,j+1,pr,pr_round);
 		}
 	}else{
 		double prob;
 		for(int frequency=8;frequency>0;frequency--){
-			p_[i][j]=DDT_int2DDT[frequency];
-			prob=p_[i][j]+pr_round;
+			//p_[i][j]=DDT_int2DDT[frequency];
+			prob=DDT_int2DDT[frequency]+pr_round;
 			//AddWeight(j,i);
-			if((pr+prob+B[rounds-i])>=B_n_bar){
+			if((pr+prob+pr_cut[i][j]+B[rounds-i])>=B_n_bar){
 				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
 					dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
 					if(j==8){
 						p[i]=prob;
-						Round_(i+1);
+						Round_(i+1,p[i]+pr);
 					}else{
 						Round__(i,j+1,pr,prob);
 					}
@@ -160,19 +185,19 @@ void Round_N_(int j,double pr,double pr_round){
 		dy[rounds][j]=0;
 		if(j==8){
 			p[rounds]=pr_round;
-			printAndSetBound();
+			printAndSetBound(p[rounds]+pr);
 		}else{
 			Round_N_(j+1,pr,pr_round);
 		}
 	}else{
 		double prob;
-		p_[rounds][j]=DDT_MaxOutput[j-1][dx[rounds][j]];
-		prob=p_[rounds][j]+pr_round;
-		dy[rounds][j]=DDT_MaxOutput_Index[j-1][dx[rounds][j]];
-		if(prob+pr>=B_n_bar){	
+		//p_[rounds][j]=DDT_MaxOutput[j-1][dx[rounds][j]];
+		prob=DDT_MaxOutput[j-1][dx[rounds][j]]+pr_round;
+		if(prob+pr>=B_n_bar){
+			//dy[rounds][j]=DDT_MaxOutput_Index[j-1][dx[rounds][j]];
 			if(j==8){
 				p[rounds]=prob;
-				printAndSetBound();
+				printAndSetBound(p[rounds]+pr);
 			}else{
 				Round_N_(j+1,pr,prob);
 			}
@@ -180,7 +205,7 @@ void Round_N_(int j,double pr,double pr_round){
 	}
 }
 
-void Round_(int i){
+void Round_(int i,double pr_former){
 	u64 x_i_2;
 	u32 x_i_2_EConv,y_i_1,x_i,y_i_1_P;
 	SboxInput2word(&x_i_2, dx[i-2]+1);
@@ -190,22 +215,23 @@ void Round_(int i){
 	x_i=x_i_2_EConv^y_i_1_P;
 	Expansion(dx[i]+1,x_i);
 
-	double pr_former=sumWeight(i-1);
-
-	double pr_max=0.0;
-	/*for(int m=0;m<9;m++){
-		pr_cut[i][m]=0;
+	//double pr_max=0.0;
+	
+	//pr_cut[i][8]=0;
+	for(int k=7;k>=0;k--){
+		if(dx[i][k+1]!=0){
+			pr_cut[i][k]=pr_cut[i][k+1]+DDT_MaxOutput[k][dx[i][k+1]];
+		}
+		else{
+			pr_cut[i][k]=pr_cut[i][k+1];
+		}
 	}
-	pr_cut[i][8]+=DDT_MaxOutput[7][dx[i][7]];
-	for(int k=7;k>=1;k--){
-		pr_cut[i][k]=pr_cut[i][k+1]+DDT_MaxOutput[k-1][dx[i][k]];
-	}*/
-	for(int k=1;k<=8;k++){
+	/*for(int k=1;k<=8;k++){
 		if(dx[i][k]!=0){
 			pr_max+=DDT_MaxOutput[k-1][dx[i][k]];
 		}
-	}
-	if((pr_former+pr_max+B[rounds-i])<B_n_bar) return;
+	}*/
+	if((pr_former+pr_cut[i][0]+B[rounds-i])<B_n_bar) return;
 
 	if(i==rounds){
 		p[rounds]=0;
@@ -258,7 +284,7 @@ void Round_2_(int j,double pr_round){
 					//p_[2][j]=0;
 					if((pr_round+p[1]+B[rounds-2])>=B_n_bar){
 						p[2]=pr_round;
-						Round_(3);
+						Round_(3,p[1]+p[2]);
 					}
 				}
 			}
@@ -276,7 +302,7 @@ void Round_2_(int j,double pr_round){
 						if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
 							dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
 							p[2]=prob;
-							Round_(3);
+							Round_(3,p[1]+p[2]);
 						}
 					}
 				}else{
