@@ -37,6 +37,8 @@ u8 dy[N+1][9]={0};
 bool activeflag=1;
 FILE* stream;
 
+double pr_cut[N+1][9];
+
 int freq1[8]={0};
 int count1[8]={0};
 int freqN[8]={0};
@@ -124,7 +126,6 @@ void Round_(int i);
 void Round__(int i,int j,double pr,double pr_round){
 	if(dx[i][j]==0){
 		dy[i][j]=0;
-		//p_[i][j]=0;
 		if(j==8){
 			p[i]=pr_round;
 			Round_(i+1);
@@ -154,24 +155,26 @@ void Round__(int i,int j,double pr,double pr_round){
 	}
 }
 
-void Round_N_(int j){
+void Round_N_(int j,double pr,double pr_round){
 	if(dx[rounds][j]==0){
 		dy[rounds][j]=0;
-		p_[rounds][j]=0;
 		if(j==8){
+			p[rounds]=pr_round;
 			printAndSetBound();
 		}else{
-			Round_N_(j+1);
+			Round_N_(j+1,pr,pr_round);
 		}
 	}else{
+		double prob;
 		p_[rounds][j]=DDT_MaxOutput[j-1][dx[rounds][j]];
-		AddWeight(j,rounds);
+		prob=p_[rounds][j]+pr_round;
 		dy[rounds][j]=DDT_MaxOutput_Index[j-1][dx[rounds][j]];
-		if(sumWeight(rounds)>=B_n_bar){	
+		if(prob+pr>=B_n_bar){	
 			if(j==8){
+				p[rounds]=prob;
 				printAndSetBound();
 			}else{
-				Round_N_(j+1);
+				Round_N_(j+1,pr,prob);
 			}
 		}
 	}
@@ -186,11 +189,29 @@ void Round_(int i){
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
 	Expansion(dx[i]+1,x_i);
+
+	double pr_former=sumWeight(i-1);
+
+	double pr_max=0.0;
+	/*for(int m=0;m<9;m++){
+		pr_cut[i][m]=0;
+	}
+	pr_cut[i][8]+=DDT_MaxOutput[7][dx[i][7]];
+	for(int k=7;k>=1;k--){
+		pr_cut[i][k]=pr_cut[i][k+1]+DDT_MaxOutput[k-1][dx[i][k]];
+	}*/
+	for(int k=1;k<=8;k++){
+		if(dx[i][k]!=0){
+			pr_max+=DDT_MaxOutput[k-1][dx[i][k]];
+		}
+	}
+	if((pr_former+pr_max+B[rounds-i])<B_n_bar) return;
+
 	if(i==rounds){
 		p[rounds]=0;
-		Round_N_(1);
+		Round_N_(1,pr_former,0);
 	}else{
-		Round__(i,1,sumWeight(i-1),0);
+		Round__(i,1,pr_former,0);
 	}
 }
 
@@ -339,7 +360,8 @@ void Round_2(){
 //------------------------------
 //第一轮搜索子函数
 //------------------------------
-void Round_1_(int j){
+void Round_1_(int j,double pr_round){
+	double prob;
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
 
 		ResetCharacter(a[1][j-1],a[1][j],1);
@@ -370,11 +392,8 @@ void Round_1_(int j){
 //******************************
 
 			if( 0==(dx[1][7]&0x3) && 0==(dx[1][1]&0x30) ){
-				p_[1][j]=0;
-				AddWeight(j,1);
-				if((p[1]+B[rounds-1])>=B_n_bar){
-					Round_2();
-				}
+				p[1]=pr_round;
+				Round_2();
 			}
 //******************************
 //a[1][j]==8且dx[1][8]==0时，dx[1][7]的后两个比特和dx[1][1]的前两个比特必须为0。
@@ -387,9 +406,10 @@ void Round_1_(int j){
  				dx[1][8]=x;
  				if( (dx[1][8]&0x30)==((dx[1][7]&0x3)<<4) && (dx[1][8]&0x3)==((dx[1][1]&0x30)>>4) ){
  					p_[1][j]=DDT_MaxOutput[7][dx[1][8]];
- 					AddWeight(j,1);
- 					if((p[1]+B[rounds-1])>=B_n_bar){
- 						Round_2();
+ 					prob=p_[1][j]+pr_round;
+ 					if((prob+B[rounds-1])>=B_n_bar){
+ 						p[1]=prob;
+						Round_2();
 					}
 				}
 			}
@@ -406,9 +426,9 @@ void Round_1_(int j){
 			for(u8 x=1;x<64;x++){
  				dx[1][1]=x;
  				p_[1][j]=DDT_MaxOutput[0][dx[1][1]];
- 				AddWeight(j,1);
- 				if((p[1]+B[rounds-1])>=B_n_bar){
- 					Round_1_(j+1);
+ 				prob=p_[1][j]+pr_round;
+ 				if((prob+B[rounds-1])>=B_n_bar){
+ 					Round_1_(j+1,prob);
 				}
 			}
 //******************************
@@ -434,9 +454,9 @@ void Round_1_(int j){
  				dx[1][a[1][j]]=x;
 				if( (dx[1][a[1][j]]&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
  					p_[1][j]=DDT_MaxOutput[a[1][j]-1][dx[1][a[1][j]]];
- 					AddWeight(j,1);
- 					if((p[1]+B[rounds-1])>=B_n_bar){
- 						Round_1_(j+1);
+ 					prob=p_[1][j]+pr_round;
+ 					if((prob+B[rounds-1])>=B_n_bar){
+ 						Round_1_(j+1,prob);
 					}
 				}
 			}
@@ -455,6 +475,6 @@ void Round_1_(int j){
 //------------------------------
 void Round_1(){
 	stream = fopen( "fprintf.txt", "w" );
-	Round_1_(1);
+	Round_1_(1,0);
 	fclose(stream);
 }
