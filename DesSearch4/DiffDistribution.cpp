@@ -19,6 +19,7 @@ u8 DDT_SearchInOrderXWithBifix[4][4][8][9][512]={0};
 u8 DDT_SearchInOrderYWithBifix[4][4][8][9][512]={0};
 int DDT_SearchInOrderWithBifixLength[4][4][8][9]={0};
 
+int DDT_int_MaxOutput[8][64];
 double DDT_MaxOutput[8][64];
 u8 DDT_MaxOutput_Index[8][64];
 u8 DDT_MaxOutputs[8][64][16]={0};
@@ -121,7 +122,7 @@ void GenDiffDistributionTableMax(){
 					DDT_MaxOutputsLength[Si][x]++;
 				}
 			}
-
+			DDT_int_MaxOutput[Si][x]=frequency/2;
 			DDT_MaxOutput[Si][x]=log((double)frequency)/log(2.0)-6.0;
 			DDT_MaxOutput_Index[Si][x]=index;
 		}
