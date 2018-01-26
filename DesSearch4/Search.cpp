@@ -78,8 +78,11 @@ inline void ResetCharacter(int k,int l,int round){
 //------------------------------
 //输出新找到的最佳特征，并设置概率下界
 //------------------------------
+int trailCount;
+double characterPr;
+
 void printAndSetBound(double pr_whole){
-	B_n_bar=pr_whole;//sumWeight(rounds);
+	//B_n_bar=pr_whole;//sumWeight(rounds);
 //******************************
 //找到新的最佳概率，则将概率下界设为它
 //******************************
@@ -108,7 +111,7 @@ void printAndSetBound(double pr_whole){
 //------------------------------
 //打印第2~N-1轮特征
 //------------------------------
-	for(int r=2;r<rounds;r++){
+	for(int r=2;r<=rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
 			fprintf(stream,"%x ",dx[r][i]);
@@ -123,7 +126,7 @@ void printAndSetBound(double pr_whole){
 //------------------------------
 //打印第N轮特征
 //------------------------------
-	fprintf(stream,"dx%d:",rounds);
+/*	fprintf(stream,"dx%d:",rounds);
 	for(int i=1;i<=8;i++){
 		fprintf(stream,"%x ",dx[rounds][i]);
 	}
@@ -140,10 +143,12 @@ void printAndSetBound(double pr_whole){
 		}
 	}
 	fprintf(stream,"\tp%d:%f\n",rounds,p[rounds]);
+*/
+
 //------------------------------
 //打印目前的最佳概率
 //------------------------------
-	fprintf(stream,"B_n_bar:%f\n==============\n",B_n_bar);
+	fprintf(stream,"B_n_bar:%f\n==============\n",pr_whole);
 }
 
 void Round_(int i,double pr_former);
@@ -160,9 +165,7 @@ void Round__(int i,int j,double pr,double pr_round){
 	}else{
 		double prob;
 		for(int frequency=8;frequency>0;frequency--){
-			//p_[i][j]=DDT_int2DDT[frequency];
 			prob=DDT_int2DDT[frequency]+pr_round;
-			//AddWeight(j,i);
 			if((pr+prob+pr_cut[i][j]+B[rounds-i])>=B_n_bar){
 				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
 					dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
@@ -191,15 +194,19 @@ void Round_N_(int j,double pr,double pr_round){
 		}
 	}else{
 		double prob;
-		//p_[rounds][j]=DDT_MaxOutput[j-1][dx[rounds][j]];
-		prob=DDT_MaxOutput[j-1][dx[rounds][j]]+pr_round;
-		if(prob+pr>=B_n_bar){
-			//dy[rounds][j]=DDT_MaxOutput_Index[j-1][dx[rounds][j]];
-			if(j==8){
-				p[rounds]=prob;
-				printAndSetBound(p[rounds]+pr);
-			}else{
-				Round_N_(j+1,pr,prob);
+		for(int frequency=8;frequency>0;frequency--){
+			prob=DDT_int2DDT[frequency]+pr_round;
+		//prob=DDT_MaxOutput[j-1][dx[rounds][j]]+pr_round;
+			if(prob+pr+pr_cut[rounds][j]>=B_n_bar){
+				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[rounds][j]];index++){
+					dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
+					if(j==8){
+						p[rounds]=prob;
+						printAndSetBound(p[rounds]+pr);
+					}else{
+						Round_N_(j+1,pr,prob);
+					}
+				}
 			}
 		}
 	}
@@ -215,9 +222,6 @@ void Round_(int i,double pr_former){
 	x_i=x_i_2_EConv^y_i_1_P;
 	Expansion(dx[i]+1,x_i);
 
-	//double pr_max=0.0;
-	
-	//pr_cut[i][8]=0;
 	for(int k=7;k>=0;k--){
 		if(dx[i][k+1]!=0){
 			pr_cut[i][k]=pr_cut[i][k+1]+DDT_MaxOutput[k][dx[i][k+1]];
@@ -226,11 +230,7 @@ void Round_(int i,double pr_former){
 			pr_cut[i][k]=pr_cut[i][k+1];
 		}
 	}
-	/*for(int k=1;k<=8;k++){
-		if(dx[i][k]!=0){
-			pr_max+=DDT_MaxOutput[k-1][dx[i][k]];
-		}
-	}*/
+
 	if((pr_former+pr_cut[i][0]+B[rounds-i])<B_n_bar) return;
 
 	if(i==rounds){
@@ -391,6 +391,11 @@ void Round_1_(int j,double pr_round){
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
 
 		ResetCharacter(a[1][j-1],a[1][j],1);
+		if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
+			if(a[1][j]!=(a[1][j-1]+1)){
+				break;
+			}
+		}
 //******************************
 //将第a[1][j-1]个S盒至第a[1][j]个S盒之间的S盒输入输出全部置为0。
 //******************************
@@ -399,11 +404,11 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==8
 //------------------------------
 		if(a[1][j]==8){
-			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
+			/*if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
 				if(a[1][j-1]!=7){
 					break;
 				}
-			}
+			}*/
 //******************************
 //a[1][j-1]后两个比特不为0，那么a[1][j]只能取a[1][j-1]+1；但若j=1，不存在这个问题。
 //a[1][j]==8时，满足上述条件，a[1][j-1]!=7。
@@ -467,11 +472,11 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==2~7
 //------------------------------
 		}else{
-			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
+			/*if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
 				if(a[1][j]!=(a[1][j-1]+1)){
 					break;
 				}
-			}
+			}*/
 //******************************
 //a[1][j-1]后两个比特不为0，那么a[1][j]只能取a[1][j-1]+1；但若j=1，不存在这个问题。
 //******************************

@@ -125,11 +125,9 @@ int main(){
 		printf("%f\t",DDT[i][dx1[i]][dy1[i]]);
 	}*/
 	double bound;
-	//rounds=5;
-	//bound=TestB[rounds];
-	for(rounds=4;rounds<5;rounds++){
+	for(rounds=16;rounds<17;rounds++){
 		bound=TestB[rounds]-1.0;
-		for(int i=0;i<1;i++){
+		for(int i=0;i<3;i++){
 			B_n_bar=bound;
 			start = clock();
 			Round_1();
