@@ -26,12 +26,9 @@ double TestB[N]={0,
 
 int rounds;
 double B_n_bar;
-int num_a[N+1]={0};
+
 int a[N+1][9]={0};
 double p[N+1];
-double p_[N+1][9]={0};
-
-int freq1[9]={0};
 
 u8 dx[N+1][9]={0};
 u8 dy[N+1][9]={0};
@@ -40,7 +37,8 @@ bool activeflag=1;
 FILE* stream;
 
 double pr_cut[N+1][9]={0};
-
+int freq1[9]={0};
+double pr_whole;
 
 /*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
@@ -97,13 +95,13 @@ double characterPr=0;
 
 
 
-void printAndSetBound(double pr_whole){
+void printAndSetBound(){
 	trailCount++;
 	if(trailCount==1){
 		characterPr=pr_whole;
 	}else{
 		characterPr=addPr(pr_whole,characterPr);
-	}
+		}
 	//B_n_bar=pr_whole;//sumWeight(rounds);
 //******************************
 //找到新的最佳概率，则将概率下界设为它
@@ -174,28 +172,28 @@ void printAndSetBound(double pr_whole){
 }
 
 
-void setdy1(int j,double pr){
+void setdy1(int j){
 	if(dx[1][j]==0){
 		dy[1][j]=0;
 		if(j==8){
-			printAndSetBound(pr);
+			printAndSetBound();
 		}else{
-			setdy1(j+1,pr);
+			setdy1(j+1);
 		}
 	}else{
 		for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][freq1[j]][dx[1][j]];index++){
 			dy[1][j]=DDT_SearchInOrderWithFixedX[j-1][freq1[j]][dx[1][j]][index];
 			if(j==8){
-				printAndSetBound(pr);
+				printAndSetBound();
 			}else{
-				setdy1(j+1,pr);
+				setdy1(j+1);
 			}
 		}
 	}
 }
 
-void Setdy1(double pr){
-	setdy1(1,pr);
+void Setdy1(){
+	setdy1(1);
 }
 
 void Round_(int i,double pr_former);
@@ -235,7 +233,8 @@ void Round_N_(int j,double pr,double pr_round){
 		dy[rounds][j]=0;
 		if(j==8){
 			p[rounds]=pr_round;
-			Setdy1(p[rounds]+pr);
+			pr_whole=p[rounds]+pr;
+			Setdy1();
 			//printAndSetBound(p[rounds]+pr);
 		}else{
 			Round_N_(j+1,pr,pr_round);
@@ -250,7 +249,8 @@ void Round_N_(int j,double pr,double pr_round){
 					dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
 					if(j==8){
 						p[rounds]=prob;
-						Setdy1(p[rounds]+pr);
+						pr_whole=p[rounds]+pr;
+						Setdy1();
 						//printAndSetBound(p[rounds]+pr);
 					}else{
 						Round_N_(j+1,pr,prob);
