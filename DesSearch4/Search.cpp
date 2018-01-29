@@ -421,6 +421,14 @@ void Round_2(){
 //------------------------------
 //第一轮搜索子函数
 //------------------------------
+
+void setCharacter(){
+	for(int i=1;;i++){
+		ResetCharacter(a[1][i-1],a[1][i],1);
+		if(a[1][i]==8) return;
+	}
+}
+
 void Round_1_(int j,double pr_round){
 	double prob;
 	bool jumpflag;
@@ -443,18 +451,18 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==8
 //------------------------------
 		if(a[1][j]==8){
-			//ResetCharacter(a[1][j-1],a[1][j],1);
 			if(j==1){
 				ResetCharacter(a[1][j-1],a[1][j],1);
 				dx[1][8]=0;
 				activeflag=0;
 				p[1]=pr_round;
+				setCharacter();
 				Round_2();
 			}else{
-				ResetCharacter(a[1][j-1],a[1][j],1);
 				if( (jumpflag==1 || 0==(dx[1][7]&0x3)) &&(a[1][1]!=1 || 0==(dx[1][1]&0x30)) ){
 					dx[1][8]=0;
 					p[1]=pr_round;
+					setCharacter();
 					Round_2();
 				}
 			}
@@ -476,7 +484,6 @@ void Round_1_(int j,double pr_round){
 //这里j不必为1，前面j==1用于判断第一轮差分是否为0。
 //累加概率，剪枝，因a[1][j]==8，通过剪枝则进入下一轮。
 //******************************
-			//ResetCharacter(a[1][j-1],a[1][j],1);
 			activeflag=1;
 			u8 x=0;
 			if(jumpflag==0){
@@ -486,6 +493,7 @@ void Round_1_(int j,double pr_round){
 				x|=((dx[1][1]&0x30)>>4);
 			}
 			for(int l=0;l<4;l++,x+=4){
+				if(x==0)continue;
 				dx[1][8]=x;
 				for(int frequency=DDT_int_MaxOutput[7][x];frequency>0;frequency--){
 					if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
@@ -493,6 +501,7 @@ void Round_1_(int j,double pr_round){
  					if((prob+B[rounds-1])>=B_n_bar){
  						p[1]=prob;
 						freq1[8]=frequency;
+						setCharacter();
 						Round_2();
 					}else break;
 				}
@@ -507,7 +516,6 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==1
 //------------------------------
 		}else if(a[1][j]==1){
-			//ResetCharacter(a[1][j-1],a[1][j],1);
 			for(u8 x=1;x<64;x++){
  				dx[1][1]=x;
 				for(int frequency=DDT_int_MaxOutput[0][x];frequency>0;frequency--){
@@ -529,13 +537,13 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==2~7
 //------------------------------
 		}else{
-			//ResetCharacter(a[1][j-1],a[1][j],1);
 			u8 x=0;
 			if(jumpflag==0&&j!=1){
 				x|=((dx[1][a[1][j]-1]&0x3)<<4);
 			}
 			
 			for(int l=0;l<16;x++,l++){
+				if(x==0)continue;
 				dx[1][a[1][j]]=x;
 				for(int frequency=DDT_int_MaxOutput[a[1][j]-1][x];frequency>0;frequency--){
 					if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;

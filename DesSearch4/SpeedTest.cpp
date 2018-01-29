@@ -43,9 +43,9 @@ int main(){
 	printf("≤È±Ì≤‚ ‘time=%f\n",(double)(end-start)/CLK_TCK);*/
 	
 	double bound;
-	for(rounds=4;rounds<5;rounds++){
-		bound=TestB[rounds]-3.0;
-		for(int i=0;i<1;i++){
+	for(rounds=16;rounds<17;rounds++){
+		bound=TestB[rounds]-1.0;
+		for(int i=0;i<3;i++){
 			B_n_bar=bound;
 			trailCount=0;
 			characterPr=0;
