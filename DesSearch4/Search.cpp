@@ -40,6 +40,8 @@ double pr_cut[N+1][9]={0};
 int freq1[9]={0};
 double pr_whole;
 
+
+
 /*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
 		if(i!=l){
@@ -141,6 +143,13 @@ void printAndSetBound(){
 			fprintf(stream,"%x ",dy[r][i]);
 		}
 		fprintf(stream,"\tp%d:%f\n",r,p[r]);
+		if(r==1){
+			fprintf(stream,"a:\n");
+			for(int i=1;i<=8;i++){
+				fprintf(stream,"%d:%d\t",i,a[1][i]);
+			}
+			fprintf(stream,"\n");
+		}
 	}
 
 //------------------------------
@@ -414,13 +423,15 @@ void Round_2(){
 //------------------------------
 void Round_1_(int j,double pr_round){
 	double prob;
+	bool jumpflag;
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
 
-		ResetCharacter(a[1][j-1],a[1][j],1);
-		if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
-			if(a[1][j]!=(a[1][j-1]+1)){
-				break;
-			}
+		//ResetCharacter(a[1][j-1],a[1][j],1);
+		if(a[1][j]!=(a[1][j-1]+1)){
+			if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0) break;
+			else jumpflag=1;
+		}else{
+			jumpflag=0;
 		}
 //******************************
 //将第a[1][j-1]个S盒至第a[1][j]个S盒之间的S盒输入输出全部置为0。
@@ -432,6 +443,22 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==8
 //------------------------------
 		if(a[1][j]==8){
+			//ResetCharacter(a[1][j-1],a[1][j],1);
+			if(j==1){
+				ResetCharacter(a[1][j-1],a[1][j],1);
+				dx[1][8]=0;
+				activeflag=0;
+				p[1]=pr_round;
+				Round_2();
+			}else{
+				ResetCharacter(a[1][j-1],a[1][j],1);
+				if( (jumpflag==1 || 0==(dx[1][7]&0x3)) &&(a[1][1]!=1 || 0==(dx[1][1]&0x30)) ){
+					dx[1][8]=0;
+					p[1]=pr_round;
+					Round_2();
+				}
+			}
+		/*if(a[1][j]==8){
 			dx[1][8]=0;
 			if(j==1){
 				activeflag=0;
@@ -442,27 +469,32 @@ void Round_1_(int j,double pr_round){
 					p[1]=pr_round;
 					Round_2();
 				}
-			}
+			}*/
 //******************************
 //j==1且a[1][j]==8且dx[1][8]==0时，第一轮差分为0，activeflag置为0，这时第二轮必须活跃
 //a[1][j]==8且dx[1][8]==0时，dx[1][7]的后两个比特和dx[1][1]的前两个比特必须为0。
 //这里j不必为1，前面j==1用于判断第一轮差分是否为0。
 //累加概率，剪枝，因a[1][j]==8，通过剪枝则进入下一轮。
 //******************************
-			
+			//ResetCharacter(a[1][j-1],a[1][j],1);
 			activeflag=1;
-			for(u8 x=1;x<64;x++){
- 				dx[1][8]=x;
- 				if( (x&0x30)==((dx[1][7]&0x3)<<4) && (x&0x3)==((dx[1][1]&0x30)>>4) ){
- 					for(int frequency=DDT_int_MaxOutput[7][x];frequency>0;frequency--){
-						if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
- 						prob=DDT_int2DDT[frequency]+pr_round;
- 						if((prob+B[rounds-1])>=B_n_bar){
- 							p[1]=prob;
-							freq1[8]=frequency;
-							Round_2();
-						}else break;
-					}
+			u8 x=0;
+			if(jumpflag==0){
+				x|=((dx[1][7]&0x3)<<4);
+			}
+			if(a[1][1]==1){
+				x|=((dx[1][1]&0x30)>>4);
+			}
+			for(int l=0;l<4;l++,x+=4){
+				dx[1][8]=x;
+				for(int frequency=DDT_int_MaxOutput[7][x];frequency>0;frequency--){
+					if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+ 					prob=DDT_int2DDT[frequency]+pr_round;
+ 					if((prob+B[rounds-1])>=B_n_bar){
+ 						p[1]=prob;
+						freq1[8]=frequency;
+						Round_2();
+					}else break;
 				}
 			}
 //******************************
@@ -475,6 +507,7 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==1
 //------------------------------
 		}else if(a[1][j]==1){
+			//ResetCharacter(a[1][j-1],a[1][j],1);
 			for(u8 x=1;x<64;x++){
  				dx[1][1]=x;
 				for(int frequency=DDT_int_MaxOutput[0][x];frequency>0;frequency--){
@@ -496,7 +529,24 @@ void Round_1_(int j,double pr_round){
 //a[1][j]==2~7
 //------------------------------
 		}else{
-			for(u8 x=1;x<64;x++){
+			//ResetCharacter(a[1][j-1],a[1][j],1);
+			u8 x=0;
+			if(jumpflag==0&&j!=1){
+				x|=((dx[1][a[1][j]-1]&0x3)<<4);
+			}
+			
+			for(int l=0;l<16;x++,l++){
+				dx[1][a[1][j]]=x;
+				for(int frequency=DDT_int_MaxOutput[a[1][j]-1][x];frequency>0;frequency--){
+					if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+					prob=DDT_int2DDT[frequency]+pr_round;
+					if((prob+B[rounds-1])>=B_n_bar){
+						freq1[a[1][j]]=frequency;
+ 						Round_1_(j+1,prob);
+					}else break;
+				}
+			}
+			/*for(u8 x=1;x<64;x++){
  				dx[1][a[1][j]]=x;
 				if( (x&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
 					for(int frequency=DDT_int_MaxOutput[a[1][j]-1][x];frequency>0;frequency--){
@@ -508,7 +558,7 @@ void Round_1_(int j,double pr_round){
 						}else break;
 					}
 				}
-			}
+			}*/
 		}
 //******************************
 //a[1][j]在2至7之间时，遍历dx[1][a[1][j]]的非零可能，这里dx[1][a[1][j]]的自由度有四个比特。
