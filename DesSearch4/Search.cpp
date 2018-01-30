@@ -296,12 +296,12 @@ void Round_(int i,double pr_former){
 void Round_2_(int j,double pr_round){
 	double prob;
 	for(a[2][j]=a[2][j-1]+1;a[2][j]<=8;a[2][j]++){
-		ResetCharacter(a[2][j-1],a[2][j],2);
 		if(j!=1 && (dx[2][a[2][j-1]]&0x3)!=0){
 			if(a[2][j]!=(a[2][j-1]+1)){
 				break;
 			}
 		}
+		ResetCharacter(a[2][j-1],a[2][j],2);
 //******************************
 //将第a[2][j-1]个S盒至第a[2][j]个S盒之间的S盒输入输出全部置为0。
 //a[2][j-1]后两个比特不为0，那么a[2][j]只能取a[2][j-1]+1；但若j=1，不存在这个问题。
@@ -406,6 +406,7 @@ void Round_2_(int j,double pr_round){
 //第二轮搜索
 //------------------------------
 void Round_2(){
+	//printf("2\n");
 	Round_2_(1,0);
 }
 
@@ -416,12 +417,13 @@ void Round_1_(int j,double pr_round){
 	double prob;
 	for(a[1][j]=a[1][j-1]+1;a[1][j]<=8;a[1][j]++){
 
-		ResetCharacter(a[1][j-1],a[1][j],1);
+		
 		if(j!=1 && (dx[1][a[1][j-1]]&0x3)!=0){
 			if(a[1][j]!=(a[1][j-1]+1)){
 				break;
 			}
 		}
+		ResetCharacter(a[1][j-1],a[1][j],1);
 //******************************
 //将第a[1][j-1]个S盒至第a[1][j]个S盒之间的S盒输入输出全部置为0。
 //a[1][j-1]后两个比特不为0，那么a[1][j]只能取a[1][j-1]+1；但若j==1，不存在这个问题。
@@ -526,5 +528,54 @@ void Round_1(){
 	errno_t err;
 	err = fopen_s(&stream, "fprintf.txt", "w" );
 	Round_1_(1,0);
+	fclose(stream);
+}
+
+void Round_1_Fix_(int j,double pr_round){
+	//printf("j:%d\t",j);
+	if(dx[1][j]==0){
+		if(j==8){
+			//printf("0-8\n");
+			p[1]=pr_round;
+			Round_2();
+		}else{
+			//printf("0!8\n");
+			Round_1_Fix_(j+1,pr_round);
+		}
+	}else{
+		//printf("!0\n");
+		double prob;
+		for(int frequency=DDT_int_MaxOutput[j-1][dx[1][j]];frequency>0;frequency--){
+			if(DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[1][j]]==0) continue;
+			prob=DDT_int2DDT[frequency]+pr_round;
+			if((prob+pr_cut[1][j]+B[rounds-1])>=B_n_bar){
+				freq1[j]=frequency;
+				if(j==8){
+					p[1]=prob;
+					Round_2();
+				}else{
+					Round_1_Fix_(j+1,prob);
+				}				
+			}else break;
+		}
+	}
+}
+
+void Round_1_Fix(){
+	errno_t err;
+	err = fopen_s(&stream, "fprintf.txt", "w" );
+	
+	for(int k=7;k>=0;k--){
+		if(dx[1][k+1]!=0){
+			pr_cut[1][k]=pr_cut[1][k+1]+DDT_MaxOutput[k][dx[1][k+1]];
+		}
+		else{
+			pr_cut[1][k]=pr_cut[1][k+1];
+		}
+	}
+
+	if((pr_cut[1][0]+B[rounds-1])<B_n_bar) return;
+	Round_1_Fix_(1,0);
+
 	fclose(stream);
 }
