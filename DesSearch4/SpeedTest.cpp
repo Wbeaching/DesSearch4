@@ -43,19 +43,19 @@ int main(){
 	printf("查表测试time=%f\n",(double)(end-start)/CLK_TCK);*/
 	
 	double bound;
-	for(rounds=4;rounds<17;rounds++){
-		printf("%d",rounds);
-		bound=TestB[rounds]-1.0;
-		for(int i=0;i<4;i++){
+	for(rounds=16;rounds<17;rounds++){
+		//printf("%d",rounds);
+		bound=TestB[rounds]-3.0;
+		for(int i=0;i<1;i++){
 			B_n_bar=bound;
 			trailCount=0;
 			characterPr=0;
 			start = clock();
 			Round_1();
 			end = clock();
-			/*printf("%d轮搜索，概率下界为%f，结果为%f，搜索时间=%f\n",rounds,bound,B_n_bar,(double)(end-start)/CLK_TCK);
-			printf("迹条数为%d,总概率为%f\n",trailCount,characterPr);*/
-			printf("&%d&%d&%f\\\\\n",(int)(-bound),trailCount,(double)(end-start)/CLK_TCK);
+			printf("%d轮搜索，概率下界为%f，结果为%f，搜索时间=%f\n",rounds,bound,B_n_bar,(double)(end-start)/CLK_TCK);
+			printf("迹条数为%d,总概率为%f\n",trailCount,characterPr);
+			//printf("&%d&%d&%f\\\\\n",(int)(-bound),trailCount,(double)(end-start)/CLK_TCK);
 			bound-=1.0;
 		}
 	}

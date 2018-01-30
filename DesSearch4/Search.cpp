@@ -101,36 +101,39 @@ void printAndSetBound(){
 		characterPr=pr_whole;
 	}else{
 		characterPr=addPr(pr_whole,characterPr);
-		}
+	}
+
 	//B_n_bar=pr_whole;//sumWeight(rounds);
 //******************************
 //找到新的最佳概率，则将概率下界设为它
 //******************************
 
-//------------------------------
-//打印第1轮特征
-//------------------------------
-/*	fprintf(stream,"dx1:");
-	for(int i=1;i<=8;i++){
-		fprintf(stream,"%x ",dx[1][i]);
-	}
-	fprintf(stream,"\ndy1:");
-	for(int i=1;i<=8;i++){
-		if(dx[1][i]==0){
-			fprintf(stream,"0 ");
-		}else{
-			for(int j=0;j<DDT_MaxOutputsLength[i-1][dx[1][i]];j++)
-			{
-				fprintf(stream,"%x-",DDT_MaxOutputs[i-1][dx[1][i]][j]);
-			}
-			fprintf(stream," ");
-		}
-	}
-	fprintf(stream,"\tp1:%f\n",p[1]);
-*/
-//------------------------------
-//打印第2~N-1轮特征
-//------------------------------
+	u64 dx1,dx2;
+	u32 dpR,dpL,dy1,dy1AfterP,dx2BeforeE;
+	SboxInput2word(&dx1, dx[1]+1);
+	SboxInput2word(&dx2, dx[2]+1);
+	ExpansionConvTL(&dpR,dx1);
+	ExpansionConvTL(&dx2BeforeE,dx2);
+	SboxOutput2word(&dy1, dy[1]+1);
+	PermutationTL(&dy1AfterP,dy1);
+	dpL=dy1AfterP^dx2BeforeE;
+
+	u64 dxN,dxN_1;
+	u32 dcR,dcL,dyN,dyNAfterP,dxN_1BeforeE;
+	SboxInput2word(&dxN, dx[rounds]+1);
+	SboxInput2word(&dxN_1, dx[rounds-1]+1);
+	ExpansionConvTL(&dcR,dxN);
+	ExpansionConvTL(&dxN_1BeforeE,dxN_1);
+	SboxOutput2word(&dyN, dy[rounds]+1);
+	PermutationTL(&dyNAfterP,dyN);
+	dcL=dyNAfterP^dxN_1BeforeE;
+
+	fprintf(stream,"plaintext diff:%x %x\n",dpL,dpR);
+	fprintf(stream,"ciphertext diff:%x %x\n",dcL,dcR);
+//******************************
+//计算明文差分与密文差分
+//******************************
+
 	for(int r=1;r<=rounds;r++){
 		fprintf(stream,"dx%d:",r);
 		for(int i=1;i<=8;i++){
@@ -142,32 +145,6 @@ void printAndSetBound(){
 		}
 		fprintf(stream,"\tp%d:%f\n",r,p[r]);
 	}
-
-//------------------------------
-//打印第N轮特征
-//------------------------------
-/*	fprintf(stream,"dx%d:",rounds);
-	for(int i=1;i<=8;i++){
-		fprintf(stream,"%x ",dx[rounds][i]);
-	}
-	fprintf(stream,"\ndy1:");
-	for(int i=1;i<=8;i++){
-		if(dx[rounds][i]==0){
-			fprintf(stream,"0 ");
-		}else{
-			for(int j=0;j<DDT_MaxOutputsLength[i-1][dx[rounds][i]];j++)
-			{
-				fprintf(stream,"%x-",DDT_MaxOutputs[i-1][dx[rounds][i]][j]);
-			}
-			fprintf(stream," ");
-		}
-	}
-	fprintf(stream,"\tp%d:%f\n",rounds,p[rounds]);
-*/
-
-//------------------------------
-//打印目前的最佳概率
-//------------------------------
 	fprintf(stream,"B_n_bar:%f\n==============\n",pr_whole);
 }
 
