@@ -40,6 +40,7 @@ double pr_cut[N+1][9]={0};
 int freq1[9]={0};
 double pr_whole;
 
+u32 DPR,DPL,DCR,DCL;
 /*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
 		if(i!=l){
@@ -211,8 +212,8 @@ void Round_N_(int j,double pr,double pr_round){
 		if(j==8){
 			p[rounds]=pr_round;
 			pr_whole=p[rounds]+pr;
-			Setdy1();
-			//printAndSetBound(p[rounds]+pr);
+			//Setdy1();
+			printAndSetBound();
 		}else{
 			Round_N_(j+1,pr,pr_round);
 		}
@@ -220,15 +221,14 @@ void Round_N_(int j,double pr,double pr_round){
 		double prob;
 		for(int frequency=8;frequency>0;frequency--){
 			prob=DDT_int2DDT[frequency]+pr_round;
-		//prob=DDT_MaxOutput[j-1][dx[rounds][j]]+pr_round;
 			if(prob+pr+pr_cut[rounds][j]>=B_n_bar){
 				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[rounds][j]];index++){
 					dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
 					if(j==8){
 						p[rounds]=prob;
 						pr_whole=p[rounds]+pr;
-						Setdy1();
-						//printAndSetBound(p[rounds]+pr);
+						//Setdy1();
+						printAndSetBound();
 					}else{
 						Round_N_(j+1,pr,prob);
 					}
@@ -508,31 +508,88 @@ void Round_1(){
 	fclose(stream);
 }
 
-void Round_1_Fix_(int j,double pr_round){
-	//printf("j:%d\t",j);
-	if(dx[1][j]==0){
+//******************************
+//******************************
+//******************************
+
+void Round_2_Fix_(int j,double pr_round){
+	if(dx[2][j]==0){
+		dy[2][j]=0;
 		if(j==8){
-			//printf("0-8\n");
-			p[1]=pr_round;
-			Round_2();
+			//printf("%d\t",j);
+			p[2]=pr_round;
+			Round_(3,p[1]+p[2]);
 		}else{
-			//printf("0!8\n");
+			Round_2_Fix_(j+1,pr_round);
+		}
+	}else{
+		double prob;
+		for(int frequency=DDT_int_MaxOutput[j-1][dx[2][j]];frequency>0;frequency--){
+			if(DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[2][j]]==0) continue;
+			prob=DDT_int2DDT[frequency]+pr_round;
+			if((prob+pr_cut[2][j]+B[rounds-2])>=B_n_bar){
+				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[2][j]];index++){
+					dy[2][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[2][j]][index];
+					if(j==8){
+						p[2]=prob;
+						Round_(3,p[1]+p[2]);
+					}else{
+						Round_2_Fix_(j+1,prob);
+					}			
+				}
+			}else break;
+		}
+	}
+}
+
+void Round_2_Fix(){
+	
+	u32 dy1,dy1AfterP,dx2BeforeE;
+	SboxOutput2word(&dy1,dy[1]+1);
+	PermutationTL(&dy1AfterP,dy1);
+	dx2BeforeE=DPL^dy1AfterP;
+	Expansion(dx[2]+1,dx2BeforeE);
+	/*print32(dx2BeforeE);
+	print8t8(dx[1]+1);
+	print8t8(dy[1]+1);
+	print8t8(dx[2]+1);*/
+	for(int k=7;k>=0;k--){
+		if(dx[2][k+1]!=0){
+			pr_cut[2][k]=pr_cut[2][k+1]+DDT_MaxOutput[k][dx[2][k+1]];
+		}
+		else{
+			pr_cut[2][k]=pr_cut[2][k+1];
+		}
+	}
+
+	if((pr_cut[2][0]+B[rounds-2])<B_n_bar) return;
+	Round_2_Fix_(1,0);
+}
+
+void Round_1_Fix_(int j,double pr_round){
+	if(dx[1][j]==0){
+		dy[1][j]=0;
+		if(j==8){
+			p[1]=pr_round;
+			Round_2_Fix();
+		}else{
 			Round_1_Fix_(j+1,pr_round);
 		}
 	}else{
-		//printf("!0\n");
 		double prob;
 		for(int frequency=DDT_int_MaxOutput[j-1][dx[1][j]];frequency>0;frequency--){
 			if(DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[1][j]]==0) continue;
 			prob=DDT_int2DDT[frequency]+pr_round;
 			if((prob+pr_cut[1][j]+B[rounds-1])>=B_n_bar){
-				freq1[j]=frequency;
-				if(j==8){
-					p[1]=prob;
-					Round_2();
-				}else{
-					Round_1_Fix_(j+1,prob);
-				}				
+				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[1][j]];index++){
+					dy[1][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[1][j]][index];
+					if(j==8){
+						p[1]=prob;
+						Round_2_Fix();
+					}else{
+						Round_1_Fix_(j+1,prob);
+					}			
+				}
 			}else break;
 		}
 	}
@@ -541,6 +598,9 @@ void Round_1_Fix_(int j,double pr_round){
 void Round_1_Fix(){
 	errno_t err;
 	err = fopen_s(&stream, "fprintf.txt", "w" );
+	
+	
+	Expansion(dx[1]+1, DPR);
 	
 	for(int k=7;k>=0;k--){
 		if(dx[1][k+1]!=0){

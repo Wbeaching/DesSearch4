@@ -9,5 +9,5 @@ extern double TestB[N];
 extern int trailCount;
 extern double characterPr;
 
-extern u8 dx[N+1][9];
+extern u32 DPR,DPL,DCR,DCL;
 void Round_1_Fix();
