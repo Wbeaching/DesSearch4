@@ -60,11 +60,13 @@ int main(){
 		}
 	}*/
 	
-	DPR=0x19600000;
-	DPL=0x4000100;
+	DPL=0x84010;
+	DPR=0x1b600000;
+	DCL=0x1b600000;
+	DCR=0x0;
 	for(rounds=16;rounds<17;rounds++){
 		bound=TestB[rounds]-2.0;
-		for(int i=0;i<1;i++){
+		for(int i=0;i<10;i++){
 			B_n_bar=bound;
 			trailCount=0;
 			characterPr=0;

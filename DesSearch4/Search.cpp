@@ -94,31 +94,13 @@ inline void ResetCharacter(int k,int l,int round){
 int trailCount=0;
 double characterPr=0;
 
+inline bool check(u32 dcL,u32 dcR){
+	if(dcL!=DCL)return 0;
+	if(dcR!=DCR)return 0;
+	return 1;
+}
 
-
-void printAndSetBound(){
-	trailCount++;
-	if(trailCount==1){
-		characterPr=pr_whole;
-	}else{
-		characterPr=addPr(pr_whole,characterPr);
-	}
-
-	//B_n_bar=pr_whole;//sumWeight(rounds);
-//******************************
-//找到新的最佳概率，则将概率下界设为它
-//******************************
-
-	u64 dx1,dx2;
-	u32 dpR,dpL,dy1,dy1AfterP,dx2BeforeE;
-	SboxInput2word(&dx1, dx[1]+1);
-	SboxInput2word(&dx2, dx[2]+1);
-	ExpansionConvTL(&dpR,dx1);
-	ExpansionConvTL(&dx2BeforeE,dx2);
-	SboxOutput2word(&dy1, dy[1]+1);
-	PermutationTL(&dy1AfterP,dy1);
-	dpL=dy1AfterP^dx2BeforeE;
-
+bool printDPAndDC(){
 	u64 dxN,dxN_1;
 	u32 dcR,dcL,dyN,dyNAfterP,dxN_1BeforeE;
 	SboxInput2word(&dxN, dx[rounds]+1);
@@ -129,10 +111,39 @@ void printAndSetBound(){
 	PermutationTL(&dyNAfterP,dyN);
 	dcL=dyNAfterP^dxN_1BeforeE;
 
+	if(check(dcL,dcR)==0) return 0;
+
+	u64 dx1,dx2;
+	u32 dpR,dpL,dy1,dy1AfterP,dx2BeforeE;
+	SboxInput2word(&dx1, dx[1]+1);
+	SboxInput2word(&dx2, dx[2]+1);
+	ExpansionConvTL(&dpR,dx1);
+	ExpansionConvTL(&dx2BeforeE,dx2);
+	SboxOutput2word(&dy1, dy[1]+1);
+	PermutationTL(&dy1AfterP,dy1);
+	dpL=dy1AfterP^dx2BeforeE;
 	fprintf(stream,"plaintext diff:%x %x\n",dpL,dpR);
 	fprintf(stream,"ciphertext diff:%x %x\n",dcL,dcR);
+
+	return 1;
+}
 //******************************
 //计算明文差分与密文差分
+//******************************
+
+void printAndSetBound(){
+	if(printDPAndDC()==0)return;
+
+	trailCount++;
+	if(trailCount==1){
+		characterPr=pr_whole;
+	}else{
+		characterPr=addPr(pr_whole,characterPr);
+	}
+
+	//B_n_bar=pr_whole;//sumWeight(rounds);
+//******************************
+//找到新的最佳概率，则将概率下界设为它
 //******************************
 
 	for(int r=1;r<=rounds;r++){
@@ -383,7 +394,6 @@ void Round_2_(int j,double pr_round){
 //第二轮搜索
 //------------------------------
 void Round_2(){
-	//printf("2\n");
 	Round_2_(1,0);
 }
 
