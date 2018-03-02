@@ -224,6 +224,13 @@ void Substitution(u8* output,u8 input,int index){
 	*output=S[index][x1][x2];
 }
 
+void SubstitutionDESL(u8* output,u8 input){
+	u8 x=input,x1,x2;
+	x1=(x&0x1)|((x>>4)&0x2);
+	x2=(x>>1)&0xf;
+	*output=S_DESL[x1][x2];
+}
+
 void print32(const u32 x){
 	printf("%x\n",x);
 }

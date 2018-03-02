@@ -28,6 +28,18 @@ int DDT_MaxOutputsLength[8][64]={0};
 u8 DDT_SearchInOrderWithFixedX[8][9][64][16]={0};
 int DDT_SearchInOrderWithFixedXLength[8][9][64]={0};
 
+double DDTDESL[64][16]={0};
+unsigned int DDTDESL_int[64][16]={0};
+u8 DDTDESL_SearchInOrderX[9][512]={0};
+u8 DDTDESL_SearchInOrderY[9][512]={0};
+int DDTDESL_SearchInOrderLength[9]={0};
+u8 DDTDESL_SearchInOrderWithFixedX[9][64][16]={0};
+int DDTDESL_SearchInOrderWithFixedXLength[9][64]={0};
+int DDTDESL_int_MaxOutput[64]={0};
+double DDTDESL_MaxOutput[64]={0};
+u8 DDTDESL_MaxOutputs[64][16]={0};
+int DDTDESL_MaxOutputsLength[64]={0};
+
 void GenDDT_int2DDT(){
 	for(int i=1;i<=8;i++){
 		DDT_int2DDT[i]=log((double)i*2)/log(2.0)-6.0;
@@ -55,6 +67,22 @@ void GenDiffDistributionTable(){
 			}
 		}
 	}
+	for(u8 Input1=0;Input1<64;Input1++){
+		for(u8 Input2=0;Input2<64;Input2++){
+			u8 Output1,Output2;
+			SubstitutionDESL(&Output1,Input1);
+			SubstitutionDESL(&Output2,Input2);
+			DDTDESL_int[Input1^Input2][Output1^Output2]++;
+		}
+	}
+	for(int i=0;i<64;i++){
+		for(int j=0;j<16;j++){
+			frequency=DDTDESL_int[i][j];
+			if(frequency!=0){
+				DDTDESL[i][j]=log(frequency)/log(2.0)-6.0;
+			}
+		}
+	}
 }
 
 void GenSearchInOrderWithFixedX(){
@@ -68,6 +96,16 @@ void GenSearchInOrderWithFixedX(){
 					DDT_SearchInOrderWithFixedX[Si][frequency][x][index]=y;
 					DDT_SearchInOrderWithFixedXLength[Si][frequency][x]++;
 				}
+			}
+		}
+	}
+	for(u8 x=0;x<64;x++){
+		for(u8 y=0;y<16;y++){
+			frequency=DDTDESL_int[x][y]/2;
+			if(frequency!=0&&frequency!=32){
+				index=DDTDESL_SearchInOrderWithFixedXLength[frequency][x];
+				DDTDESL_SearchInOrderWithFixedX[frequency][x][index]=y;
+				DDTDESL_SearchInOrderWithFixedXLength[frequency][x]++;
 			}
 		}
 	}
@@ -100,6 +138,17 @@ void GenSearchInOrder(){
 			}
 		}
 	}
+	for(u8 x=0;x<64;x++){
+		for(u8 y=0;y<16;y++){
+			frequency=DDTDESL_int[x][y]/2;
+			if(frequency!=0&&frequency!=32){
+				index=DDTDESL_SearchInOrderLength[frequency];
+				DDTDESL_SearchInOrderX[frequency][index]=x;
+				DDTDESL_SearchInOrderY[frequency][index]=y;
+				DDTDESL_SearchInOrderLength[frequency]++;
+			}
+		}
+	}
 }
 
 void GenDiffDistributionTableMax(){
@@ -126,6 +175,23 @@ void GenDiffDistributionTableMax(){
 			DDT_MaxOutput[Si][x]=log((double)frequency)/log(2.0)-6.0;
 			DDT_MaxOutput_Index[Si][x]=index;
 		}
+	}
+	for(u8 x=1;x<64;x++){
+		frequency=0;
+		for(u8 y=0;y<16;y++){
+			if(DDTDESL_int[x][y]>frequency){
+				frequency=DDTDESL_int[x][y];
+				index=y;
+			}
+		}
+		for(u8 y=0;y<16;y++){
+			if(DDTDESL_int[x][y]==frequency){
+				DDTDESL_MaxOutputs[x][DDTDESL_MaxOutputsLength[x]]=y;
+				DDTDESL_MaxOutputsLength[x]++;
+			}
+		}
+		DDTDESL_int_MaxOutput[x]=frequency/2;
+		DDTDESL_MaxOutput[x]=log((double)frequency)/log(2.0)-6.0;
 	}
 }
 

@@ -8,6 +8,7 @@ void Permutation(u32* output, u32 input);
 unsigned long long Expansion1(unsigned int x);
 unsigned int Permutation1(unsigned int x);
 void Substitution(u8* output,u8 input,int index);
+void SubstitutionDESL(u8* output,u8 input);
 void print32(const u32 x);
 void print64(const u64 x);
 void print8t8(const u8* y);

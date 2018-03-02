@@ -12,8 +12,14 @@
 	-19.963827,-23.612152,-30.482869,-31.482869,-38.353586,
 	-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
 	-61.965737};*/
-double B[N]={0,
+/*double B[N]={0,
 	0,-2.0+1e-10,-4.0+1e-10,-9.607682,-13.215364,
+	-19.963825,-23.612150,-30.482867,-31.482867,-38.353584,
+	-39.353584,-46.224301,-47.224301,-54.095018,-55.095018,
+	-61.965735};*/
+
+double B[N]={0,
+	0,-2.0+1e-10,-4.0+1e-10,-9.022720+1e-10,-13.215364,
 	-19.963825,-23.612150,-30.482867,-31.482867,-38.353584,
 	-39.353584,-46.224301,-47.224301,-54.095018,-55.095018,
 	-61.965735};
@@ -41,6 +47,8 @@ int freq1[9]={0};
 double pr_whole;
 
 u32 DPR,DPL,DCR,DCL;
+
+bool testFlag=0;
 /*void ResetCharacter(int k,int l,int round){
 	for(int i=k+1;i<=8;i++){
 		if(i!=l){
@@ -95,8 +103,8 @@ int trailCount=0;
 double characterPr=0;
 
 inline bool check(u32 dcL,u32 dcR){
-	if(dcL!=DCL)return 0;
-	if(dcR!=DCR)return 0;
+	if(((dcL^DCL)&0xffff0000)!=0)return 0;
+	if(((dcR^DCR)&0x0000ffff)!=0)return 0;
 	return 1;
 }
 
@@ -141,7 +149,7 @@ void printAndSetBound(){
 		characterPr=addPr(pr_whole,characterPr);
 	}
 
-	//B_n_bar=pr_whole;//sumWeight(rounds);
+	B_n_bar=pr_whole;
 //******************************
 //找到新的最佳概率，则将概率下界设为它
 //******************************
@@ -170,8 +178,10 @@ void setdy1(int j){
 			setdy1(j+1);
 		}
 	}else{
-		for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][freq1[j]][dx[1][j]];index++){
-			dy[1][j]=DDT_SearchInOrderWithFixedX[j-1][freq1[j]][dx[1][j]][index];
+		//for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][freq1[j]][dx[1][j]];index++){
+		for(int index=0;index<DDTDESL_SearchInOrderWithFixedXLength[freq1[j]][dx[1][j]];index++){
+			//dy[1][j]=DDT_SearchInOrderWithFixedX[j-1][freq1[j]][dx[1][j]][index];
+			dy[1][j]=DDTDESL_SearchInOrderWithFixedX[freq1[j]][dx[1][j]][index];
 			if(j==8){
 				printAndSetBound();
 			}else{
@@ -201,8 +211,10 @@ void Round__(int i,int j,double pr,double pr_round){
 		for(int frequency=8;frequency>0;frequency--){
 			prob=DDT_int2DDT[frequency]+pr_round;
 			if((pr+prob+pr_cut[i][j]+B[rounds-i])>=B_n_bar){
-				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
-					dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
+				//for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[i][j]];index++){
+				for(int index=0;index<DDTDESL_SearchInOrderWithFixedXLength[frequency][dx[i][j]];index++){
+					//dy[i][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[i][j]][index];
+					dy[i][j]=DDTDESL_SearchInOrderWithFixedX[frequency][dx[i][j]][index];
 					if(j==8){
 						p[i]=prob;
 						Round_(i+1,p[i]+pr);
@@ -223,8 +235,8 @@ void Round_N_(int j,double pr,double pr_round){
 		if(j==8){
 			p[rounds]=pr_round;
 			pr_whole=p[rounds]+pr;
-			//Setdy1();
-			printAndSetBound();
+			Setdy1();
+			//printAndSetBound();
 		}else{
 			Round_N_(j+1,pr,pr_round);
 		}
@@ -233,13 +245,15 @@ void Round_N_(int j,double pr,double pr_round){
 		for(int frequency=8;frequency>0;frequency--){
 			prob=DDT_int2DDT[frequency]+pr_round;
 			if(prob+pr+pr_cut[rounds][j]>=B_n_bar){
-				for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[rounds][j]];index++){
-					dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
+				//for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[rounds][j]];index++){
+				for(int index=0;index<DDTDESL_SearchInOrderWithFixedXLength[frequency][dx[rounds][j]];index++){
+					//dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
+					dy[rounds][j]=DDTDESL_SearchInOrderWithFixedX[frequency][dx[rounds][j]][index];
 					if(j==8){
 						p[rounds]=prob;
 						pr_whole=p[rounds]+pr;
-						//Setdy1();
-						printAndSetBound();
+						Setdy1();
+						//printAndSetBound();
 					}else{
 						Round_N_(j+1,pr,prob);
 					}
@@ -258,18 +272,16 @@ void Round_(int i,double pr_former){
 	PermutationTL(&y_i_1_P,y_i_1);
 	x_i=x_i_2_EConv^y_i_1_P;
 	Expansion(dx[i]+1,x_i);
-
 	for(int k=7;k>=0;k--){
 		if(dx[i][k+1]!=0){
-			pr_cut[i][k]=pr_cut[i][k+1]+DDT_MaxOutput[k][dx[i][k+1]];
+			pr_cut[i][k]=pr_cut[i][k+1]+DDTDESL_MaxOutput[dx[i][k+1]];
 		}
 		else{
 			pr_cut[i][k]=pr_cut[i][k+1];
 		}
 	}
-
 	if((pr_former+pr_cut[i][0]+B[rounds-i])<B_n_bar) return;
-
+	
 	if(i==rounds){
 		p[rounds]=0;
 		Round_N_(1,pr_former,0);
@@ -322,10 +334,13 @@ void Round_2_(int j,double pr_round){
 			for(int frequency=8;frequency>0;frequency--){
 				prob=pr_round+DDT_int2DDT[frequency];
 				if((prob+p[1]+B[rounds-2])>=B_n_bar){
-					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
-						dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
+					//for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+					for(int index=0;index<DDTDESL_SearchInOrderLength[frequency];index++){
+						//dx[2][8]=DDT_SearchInOrderX[7][frequency][index];
+						dx[2][8]=DDTDESL_SearchInOrderX[frequency][index];
 						if( (dx[2][8]&0x30)==((dx[2][7]&0x3)<<4) && (dx[2][8]&0x3)==((dx[2][1]&0x30)>>4) ){
-							dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+							//dy[2][8]=DDT_SearchInOrderY[7][frequency][index];
+							dy[2][8]=DDTDESL_SearchInOrderY[frequency][index];
 							p[2]=prob;
 							Round_(3,p[1]+p[2]);
 						}
@@ -347,9 +362,12 @@ void Round_2_(int j,double pr_round){
 			for(int frequency=8;frequency>0;frequency--){
 				prob=pr_round+DDT_int2DDT[frequency];
 				if((prob+p[1]+B[rounds-2])>=B_n_bar){
-					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
-						dx[2][1]=DDT_SearchInOrderX[0][frequency][index];
-						dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
+					//for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+					for(int index=0;index<DDTDESL_SearchInOrderLength[frequency];index++){
+						//dx[2][1]=DDT_SearchInOrderX[0][frequency][index];
+						//dy[2][1]=DDT_SearchInOrderY[0][frequency][index];
+						dx[2][1]=DDTDESL_SearchInOrderX[frequency][index];
+						dy[2][1]=DDTDESL_SearchInOrderY[frequency][index];
 						Round_2_(j+1,prob);
 					}
 				}else{
@@ -370,10 +388,13 @@ void Round_2_(int j,double pr_round){
 			for(int frequency=8;frequency>0;frequency--){
 				prob=pr_round+DDT_int2DDT[frequency];
 				if((prob+p[1]+B[rounds-2])>=B_n_bar){
-					for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
-						dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
+					//for(int index=0;index<DDT_SearchInOrderLength[a[2][j]-1][frequency];index++){
+					for(int index=0;index<DDTDESL_SearchInOrderLength[frequency];index++){
+						//dx[2][a[2][j]]=DDT_SearchInOrderX[a[2][j]-1][frequency][index];
+						dx[2][a[2][j]]=DDTDESL_SearchInOrderX[frequency][index];
 						if( (dx[2][a[2][j]]&0x30) == ((dx[2][a[2][j]-1]&0x3)<<4) ){
-							dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
+							//dy[2][a[2][j]]=DDT_SearchInOrderY[a[2][j]-1][frequency][index];
+							dy[2][a[2][j]]=DDTDESL_SearchInOrderY[frequency][index];
 							Round_2_(j+1,prob);
 						}
 					}					
@@ -443,8 +464,10 @@ void Round_1_(int j,double pr_round){
 			for(u8 x=1;x<64;x++){
  				dx[1][8]=x;
  				if( (x&0x30)==((dx[1][7]&0x3)<<4) && (x&0x3)==((dx[1][1]&0x30)>>4) ){
- 					for(int frequency=DDT_int_MaxOutput[7][x];frequency>0;frequency--){
-						if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+ 					//for(int frequency=DDT_int_MaxOutput[7][x];frequency>0;frequency--){
+					for(int frequency=DDTDESL_int_MaxOutput[x];frequency>0;frequency--){
+						//if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+						if(DDTDESL_SearchInOrderWithFixedXLength[frequency][x]==0) continue;
  						prob=DDT_int2DDT[frequency]+pr_round;
  						if((prob+B[rounds-1])>=B_n_bar){
  							p[1]=prob;
@@ -466,8 +489,10 @@ void Round_1_(int j,double pr_round){
 		}else if(a[1][j]==1){
 			for(u8 x=1;x<64;x++){
  				dx[1][1]=x;
-				for(int frequency=DDT_int_MaxOutput[0][x];frequency>0;frequency--){
-					if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+				//for(int frequency=DDT_int_MaxOutput[0][x];frequency>0;frequency--){
+				for(int frequency=DDTDESL_int_MaxOutput[x];frequency>0;frequency--){
+					//if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+					if(DDTDESL_SearchInOrderWithFixedXLength[frequency][x]==0) continue;
 					prob=DDT_int2DDT[frequency]+pr_round;
 					if((prob+B[rounds-1])>=B_n_bar){
 						freq1[1]=frequency;
@@ -488,8 +513,10 @@ void Round_1_(int j,double pr_round){
 			for(u8 x=1;x<64;x++){
  				dx[1][a[1][j]]=x;
 				if( (x&0x30) == ((dx[1][a[1][j]-1]&0x3)<<4) ){
-					for(int frequency=DDT_int_MaxOutput[a[1][j]-1][x];frequency>0;frequency--){
-						if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+					//for(int frequency=DDT_int_MaxOutput[a[1][j]-1][x];frequency>0;frequency--){
+					for(int frequency=DDTDESL_int_MaxOutput[x];frequency>0;frequency--){
+						//if(DDT_SearchInOrderWithFixedXLength[a[1][j]-1][frequency][x]==0) continue;
+						if(DDTDESL_SearchInOrderWithFixedXLength[frequency][x]==0) continue;
 						prob=DDT_int2DDT[frequency]+pr_round;
 						if((prob+B[rounds-1])>=B_n_bar){
 							freq1[a[1][j]]=frequency;
@@ -559,10 +586,7 @@ void Round_2_Fix(){
 	PermutationTL(&dy1AfterP,dy1);
 	dx2BeforeE=DPL^dy1AfterP;
 	Expansion(dx[2]+1,dx2BeforeE);
-	/*print32(dx2BeforeE);
-	print8t8(dx[1]+1);
-	print8t8(dy[1]+1);
-	print8t8(dx[2]+1);*/
+	//if(dx2BeforeE==0x1a0000)testFlag=1;
 	for(int k=7;k>=0;k--){
 		if(dx[2][k+1]!=0){
 			pr_cut[2][k]=pr_cut[2][k+1]+DDT_MaxOutput[k][dx[2][k+1]];
@@ -574,6 +598,7 @@ void Round_2_Fix(){
 
 	if((pr_cut[2][0]+B[rounds-2])<B_n_bar) return;
 	Round_2_Fix_(1,0);
+	testFlag=0;
 }
 
 void Round_1_Fix_(int j,double pr_round){
