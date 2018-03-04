@@ -37,7 +37,11 @@ extern u8 DDTDESL_SearchInOrderY[9][512];
 extern int DDTDESL_SearchInOrderLength[9];
 extern u8 DDTDESL_SearchInOrderWithFixedX[9][64][16];
 extern int DDTDESL_SearchInOrderWithFixedXLength[9][64];
-extern int DDTDESL_int_MaxOutput[64];
-extern double DDTDESL_MaxOutput[64];
-extern u8 DDTDESL_MaxOutputs[64][16];
+extern int DDTDESL_int_MaxOutput[64];//对某输入计数最大的输出的计数
+extern double DDTDESL_MaxOutput[64];//对某输入计数最大的输出的概率
+extern u8 DDTDESL_MaxOutputs[64][16];//对某输入技术最大的所有输出
 extern int DDTDESL_MaxOutputsLength[64];
+void printDDTDESL_int();
+void printSearchInOrderDESL();
+void printMaxOutputDESL(int ip);
+void printSearchInOrderWithFixedXDESL(int ip);

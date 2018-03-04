@@ -18,15 +18,15 @@
 	-39.353584,-46.224301,-47.224301,-54.095018,-55.095018,
 	-61.965735};*/
 
-double B[N]={0,
-	0,-2.0+1e-10,-4.0+1e-10,-9.022720+1e-10,-13.215364,
-	-19.963825,-23.612150,-30.482867,-31.482867,-38.353584,
-	-39.353584,-46.224301,-47.224301,-54.095018,-55.095018,
-	-61.965735};
+double B[N] = { 0,
+0,-2.0 + 1e-10,-4.0 + 1e-10,-9.022719 + 1e-10,-14.045440 + 1e-10,
+-23,-23.612152,-30.482869,-31.482869,-38.353586,
+-39.353586,-46.224303,-47.224303,-54.095020,-55.095020,
+-61.965737 };
 
 double TestB[N]={0,
-	0,-2.0,-4.0,-9.0,-13.0,
-	-19.0,-23.0,-30.0,-31.0,-38.0,
+	0,-2.0,-4.0,-9.0,-14.0,
+	-23.0,-23.0,-30.0,-31.0,-38.0,
 	-39.0,-46.0,-47.0,-54.0,-55.0,
 	-61.0};
 
@@ -119,7 +119,7 @@ bool printDPAndDC(){
 	PermutationTL(&dyNAfterP,dyN);
 	dcL=dyNAfterP^dxN_1BeforeE;
 
-	if(check(dcL,dcR)==0) return 0;
+	//if(check(dcL,dcR)==0) return 0;
 
 	u64 dx1,dx2;
 	u32 dpR,dpL,dy1,dy1AfterP,dx2BeforeE;
@@ -244,7 +244,8 @@ void Round_N_(int j,double pr,double pr_round){
 		double prob;
 		for(int frequency=8;frequency>0;frequency--){
 			prob=DDT_int2DDT[frequency]+pr_round;
-			if(prob+pr+pr_cut[rounds][j]>=B_n_bar){
+			//if(prob+pr+pr_cut[rounds][j]>=B_n_bar){
+			if(DDTDESL_SearchInOrderWithFixedXLength[frequency][dx[rounds][j]]!=0){
 				//for(int index=0;index<DDT_SearchInOrderWithFixedXLength[j-1][frequency][dx[rounds][j]];index++){
 				for(int index=0;index<DDTDESL_SearchInOrderWithFixedXLength[frequency][dx[rounds][j]];index++){
 					//dy[rounds][j]=DDT_SearchInOrderWithFixedX[j-1][frequency][dx[rounds][j]][index];
@@ -258,6 +259,7 @@ void Round_N_(int j,double pr,double pr_round){
 						Round_N_(j+1,pr,prob);
 					}
 				}
+				break;
 			}
 		}
 	}

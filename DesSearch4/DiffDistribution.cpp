@@ -235,3 +235,40 @@ void print(int SboxIndex,u8 inputMask){
 	printf("\n");
 	printf("===================\n");
 }
+
+void printDDTDESL_int(){
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 16; j++) {
+			printf("%d ", DDTDESL_int[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+void printSearchInOrderDESL() {
+	for (int freq = 8; freq >= 0; freq--) {
+		printf("freq:%d\tlength:%d\n",freq, DDTDESL_SearchInOrderLength[freq]);
+		for (int count = 0; count < DDTDESL_SearchInOrderLength[freq]; count++) {
+			printf("(%x,%x)\t", DDTDESL_SearchInOrderX[freq][count], DDTDESL_SearchInOrderY[freq][count]);
+		}
+		printf("\n");
+	}
+}
+
+void printMaxOutputDESL(int ip) {
+	printf("maxof%x\tfreq:%d\tlength:%d\n",ip, DDTDESL_int_MaxOutput[ip], DDTDESL_MaxOutputsLength[ip]);
+	for (int count = 0; count < DDTDESL_MaxOutputsLength[ip]; count++) {
+		printf("%x\t", DDTDESL_MaxOutputs[ip][count]);
+	}
+	printf("\n");
+}
+
+void printSearchInOrderWithFixedXDESL(int ip) {
+	for (int freq = 8; freq >= 0; freq--) {
+		printf("%x\tfreq:%d\tlength:%d\n",ip, freq, DDTDESL_SearchInOrderWithFixedXLength[freq][ip]);
+		for (int count = 0; count < DDTDESL_SearchInOrderWithFixedXLength[freq][ip]; count++) {
+			printf("%x\t", DDTDESL_SearchInOrderWithFixedX[freq][ip][count]);
+		}
+		printf("\n");
+	}
+}

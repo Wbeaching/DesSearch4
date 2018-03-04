@@ -41,12 +41,15 @@ int main(){
 	}
 	end = clock();
 	printf("≤È±Ì≤‚ ‘time=%f\n",(double)(end-start)/CLK_TCK);*/
-	
+	//printDDTDESL_int();
+	//printSearchInOrderDESL();
+	//printMaxOutputDESL(0xc);
+	//printSearchInOrderWithFixedXDESL(0xc);
 	double bound;
-	for(rounds=5;rounds<6;rounds++){
+	for (rounds = 6; rounds < 7; rounds++) {
 		//printf("%d",rounds);
 		bound=TestB[rounds];
-		for(int i=0;i<4;i++){
+		for(int i=0;i<1;i++){
 			B_n_bar=bound;
 			trailCount=0;
 			characterPr=0;
